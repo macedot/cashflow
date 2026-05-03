@@ -1,0 +1,22 @@
+services:
+  cashflow:
+    image: ghcr.io/${GHCR_OWNER:-macedot}/cashflow-js:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cashflow
+    ports:
+      - "8080:80"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus: "0.25"
+    restart: unless-stopped
