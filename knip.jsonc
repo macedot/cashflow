@@ -1,7 +1,22 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicepkg/knip/main/knip.schema.json",
-  "entry": ["src/**/*.js", "index.html"],
-  "project": ["src/**/*.js", "*.js"],
-  "ignore": ["**/*.test.js", "vitest.config.js"],
-  "ignoreDependencies": ["vitest", "lint-staged", "@vitest/coverage-v8"]
+  "entry": [
+    "src/**/*.js",
+    "index.html"
+  ],
+  "project": [
+    "src/**/*.js",
+    "*.js"
+  ],
+  "ignore": [
+    "**/*.test.js",
+    "vitest.config.js"
+  ],
+  "ignoreDependencies": [
+    "vitest",
+    "lint-staged",
+    "@vitest/coverage-v8",
+    "@eslint/js",
+    "eslint-plugin-boundaries"
+  ]
 }
