@@ -101,20 +101,20 @@ npm run typecheck     # TypeScript strict mode (JSDoc types)
 
 ```
 ┌──────────────────────────────────────────────┐
-│ Browser                                       │
+│ Browser                                      │
 │ ┌──────────────────────────────────────────┐ │
 │ │ index.html (Vue 3 SPA, ~1300 lines)      │ │
-│ │ ┌──────────────────┐ ┌────────────────┐  │ │
-│ │ │ Events Table      │ │ Chart (Chart.js)│  │ │
-│ │ │ (inline CRUD)     │ │ Bar + Line      │  │ │
-│ │ └──────────────────┘ └────────────────┘  │ │
-│ │ ┌──────────────────────────────────────┐  │ │
-│ │ │ Simulation Engine (src/cashflow.js)   │  │ │
-│ │ │ Pure functions, zero dependencies     │  │ │
-│ │ │ runSimulation / generateEventCashflows│  │ │
-│ │ └──────────────────────────────────────┘  │ │
+│ │ ┌───────────────┐  ┌─────────────────┐   │ │
+│ │ │ Events Table  │  │ Chart.js        │   │ │
+│ │ │ (inline CRUD) │  │ Bar + Line      │   │ │
+│ │ └───────────────┘  └─────────────────┘   │ │
+│ │ ┌────────────────────────────────────┐   │ │
+│ │ │ src/cashflow.js                    │   │ │
+│ │ │ runSimulation / event generation   │   │ │
+│ │ │ Pure functions, zero dependencies  │   │ │
+│ │ └────────────────────────────────────┘   │ │
 │ └──────────────────────────────────────────┘ │
-│ localStorage: events + settings               │
+│ localStorage: events + settings              │
 │ CDN: Vue 3, Chart.js, PapaParse, Tailwind    │
 └──────────────────────────────────────────────┘
 ```
