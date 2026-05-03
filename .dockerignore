@@ -1,0 +1,20 @@
+# ── Deny everything by default ──
+*
+
+# Allow directory traversal
+!*/
+
+# ── Only the files needed to serve the SPA ──
+!index.html
+!src/
+!src/*.js
+!src/*.css
+
+# ── Re-deny within allowed dirs ──
+src/*.test.js
+*.log
+.git/
+.github/
+.doc*/
+*.md
+*.json

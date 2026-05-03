@@ -1,91 +1,95 @@
 # AGENTS.md
 
-This file provides guidance for autonomous AI agents working on this codebase.
+Guidance for autonomous AI agents working on this codebase.
 
 ## Project Overview
 
-CashflowSim is a client-side cashflow simulation SPA. It visualizes income and expenses over time using Vue 3 and Chart.js.
+CashflowSim — client-side cashflow SPA. Vue 3 + Chart.js, zero backend, all browser. Deploys to GitHub Pages on push to master.
 
 ## Development Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Lint code
-npm run lint
-
-# Auto-fix lint errors
-npm run lint:fix
-
-# Format code with Prettier
-npm run format
-
-# Type check
-npm run typecheck
-
-# Check for unused dependencies
-npm run knip
-
-# Check for duplicate code
-npm run jscpd
-
-# Serve locally
-python3 -m http.server 8080
+npm install              # install dev deps
+npm test                 # vitest run (unit tests: src/**/*.test.js)
+npm run test:watch       # vitest watch mode
+npm run test:coverage    # vitest with coverage (thresholds: 80% all metrics)
+npm run test:e2e         # Playwright E2E (Chromium, auto-starts :8080)
+npm run test:e2e:ui      # Playwright with UI mode
+npm run lint             # ESLint on src/*.js
+npm run lint:fix         # ESLint auto-fix
+npm run format           # Prettier on src/**/*.js
+npm run typecheck        # tsc --noEmit (strict mode, JSDoc types, checkJs)
+npm run knip             # unused dependency check
+npm run jscpd            # duplicate code check (threshold: 3)
+npm run docs             # regenerate API.md from JSDoc (jsdoc-to-markdown)
+npm run release          # release-please (conventional commits)
+python3 -m http.server 8080  # local dev (ES modules require HTTP, not file://)
 ```
 
-## Code Quality Standards
+**CI pipeline order** (must pass sequentially): lint → typecheck → test → knip → jscpd
 
-### TODO/FIXME Policy
+## Architecture Constraints
 
-All TODO and FIXME comments MUST link to an issue. Use format:
+### File Responsibilities
 
-- `TODO(#issue): Description` for planned work
-- `FIXME(#issue): Description` for known bugs
+| File                            | Role                                                                                   | Key Rule                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `index.html` (~1300 lines)      | Vue 3 SPA — ALL app logic (chart rendering, events CRUD, dark mode, CSV, localStorage) | Do NOT add more logic here. Extract to `src/` when possible.                                              |
+| `src/cashflow.js`               | Pure simulation engine. Zero dependencies. Only JS built-ins.                          | Exports: `runSimulation`, `generateEventCashflows`, `parseDate`, `isValidDate`, `FREQUENCIES`. Keep pure. |
+| `src/logger.js`                 | Structured logger with PII redaction.                                                  | Exports: `debug`, `info`, `warn`, `error`. Use instead of raw `console.*` in new code.                    |
+| `src/style.css`                 | Custom CSS only — Tailwind overrides, dark mode, chart container, error messages.      | No business logic here.                                                                                   |
+| `src/cashflow.test.js`          | Vitest unit tests (~30 tests). Runs in Node environment (no browser).                  | Add tests for all new simulation logic.                                                                   |
+| `tests/integration/app.spec.js` | Playwright E2E test. Chromium only.                                                    | Flows that touch the full SPA go here.                                                                    |
 
-Example:
+### Dark Mode (Critical Gotcha)
 
-```javascript
-// TODO(#123): Refactor this function to reduce complexity
-// FIXME(#456): Handle edge case when date is Invalid Date
-```
+Tailwind CDN v2.x does **NOT** support `dark:` variants. Dark mode is implemented via:
 
-### Commit Messages
+1. Inline `<script>` in `<head>` sets `.dark` class on `<html>` **before** Tailwind CSS parses
+2. CSS custom properties on `:root` (light) and `.dark` (dark)
+3. `!important` overrides on `html.dark` targeting every used Tailwind utility class
 
-- Use conventional commits format
-- AI agents should include `Co-Authored-By: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>`
+**Rule**: When adding a new Tailwind utility class to `index.html`, add a corresponding `html.dark .your-class { property: value !important; }` rule to `src/style.css`.
 
-### Branch Naming
+### Date Handling
 
-- Feature: `feature/description`
-- Bugfix: `fix/description`
-- Readiness: `readiness/signal-name`
+All date math uses **UTC** methods to avoid timezone shifts:
 
-## Testing Requirements
+- `parseDate()` uses `Date.UTC(y, m-1, d)` for YYYY-MM-DD strings
+- `addPeriod()` uses `getUTCFullYear()`, `getUTCMonth()`, `getUTCDate()`, `setUTCDate()`
+- Date keys use `getUTCFullYear()-getUTCMonth()-getUTCDate()`
 
-- All new features MUST include unit tests
-- Run `npm test` before committing
-- Maintain 100% test pass rate
+Do NOT use local time methods (`getFullYear`, `getMonth`, `getDate`) for simulation dates.
 
-## File Organization
+### TypeScript
 
-- `src/cashflow.js` - Core simulation logic (no dependencies)
-- `src/cashflow.test.js` - Unit tests for simulation logic
-- `src/style.css` - Custom CSS
-- `index.html` - Vue SPA application
+No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full strict mode. Types are expressed through JSDoc annotations (`@type`, `@param`, `@returns`, `@typedef`). Every function must have JSDoc types.
 
-## Build & Deployment
+## Code Standards
 
-This is a CDN-only SPA with no build step. All dependencies are loaded via CDN.
+- **Prettier**: `semi`, `singleQuote`, `tabWidth: 2`, `trailingComma: "es5"`, `printWidth: 100`, `arrowParens: "avoid"`
+- **ESLint**: `eqeqeq: "always"`, `curly: "all"`, `no-var`, `prefer-const`, `complexity: max 10`, `max-lines: 600`, `require-await`, `no-console: warn` (allows debug/info/warn/error)
+- **TODO/FIXME**: must reference an issue — `TODO(#123): description`, `FIXME(#456): description`
+- **Coverage thresholds**: statements 80%, branches 80%, functions 80%, lines 80%
+- **Commit style**: Conventional Commits. AI-authored commits include `Co-Authored-By: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>`
+- **Branches**: `feature/*`, `fix/*`, `readiness/*`
+- **Pre-commit hook** (Husky): `lint-staged` runs ESLint fix + Prettier on staged `.js`; Prettier on `.json/.md/.css/.html`
+
+## Testing
+
+- Unit: `vitest run` (forks pool, globals on, verbose reporter, retries 2x in CI)
+- E2E: `playwright test` (Chromium, fully parallel, auto-starts dev server on :8080, retries 2x in CI)
+- Coverage enforced at 80% across all metrics (configured in `vitest.config.js`)
+- New features require unit tests. E2E tests for new user flows.
+
+## Release & Deploy
+
+- `npm run release` (release-please) bumps version from conventional commits
+- Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`cashflow.macedot.dev`)
 
 ## Documentation
 
-- [API Documentation](API.md) - Auto-generated API reference
-- [Architecture](docs/architecture.md) - System architecture diagrams
-- [Runbooks](docs/runbooks.md) - Development and troubleshooting guides
+- [API.md](API.md) — auto-generated from JSDoc (`npm run docs`)
+- [docs/architecture.md](docs/architecture.md) — system diagrams, data flow
+- [docs/runbooks.md](docs/runbooks.md) — dev setup, deployment, troubleshooting, localStorage keys
+- [CLAUDE.md](CLAUDE.md) — Claude Code-specific guidance (detailed Vue patterns, Chart.js setup, event editing state)

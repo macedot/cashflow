@@ -701,7 +701,12 @@
             saveSimParams();
           }
 
-          // Portfolio currency
+          /**
+           * Portfolio currency — the display/reporting currency for the simulation.
+           * Selected via dropdown (USD, EUR, GBP, BRL). Persisted in localStorage.
+           * Used to show event currency badges when an entry currency differs.
+           * @type {import('vue').Ref<string>}
+           */
           const portfolioCurrency = ref('USD');
 
           loadSimParams();
@@ -715,6 +720,10 @@
             endDate: '',
             frequency: '',
             value: 0,
+            /**
+             * Entry currency for this event (USD, EUR, GBP, BRL).
+             * Optional — defaults to portfolioCurrency when absent from CSV import.
+             */
             currency: 'USD',
           });
           const newEventDraft = reactive({
@@ -723,6 +732,10 @@
             endDate: '',
             frequency: '',
             value: 0,
+            /**
+             * Entry currency for the new event (USD, EUR, GBP, BRL).
+             * Optional — defaults to 'USD' when not set.
+             */
             currency: 'USD',
           });
           const formError = reactive({ name: '', startDate: '', frequency: '' });
@@ -969,6 +982,7 @@
                     endDate: row.endDate || '',
                     frequency: row.frequency,
                     value: value,
+                    // Currency is optional in CSV — defaults to 'USD' if missing
                     currency: row.currency || 'USD',
                   });
                   imported++;
