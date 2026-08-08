@@ -1,96 +1,201 @@
-    [v-cloak] { display: none; }
-    .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-    .fade-enter-from, .fade-leave-to { opacity: 0; }
-    .chart-container { position: relative; height: 350px; width: 100%; }
-    .error-msg { color: var(--color-error); font-size: 0.875rem; margin-top: 0.25rem; }
-    .toggle-icon::before { color: inherit; }
-    .toggle-icon.fold::after { content: '▶'; color: inherit; }
-    .toggle-icon:not(.fold)::after { content: '▼'; color: inherit; }
+[v-cloak] {
+  display: none;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.chart-container {
+  position: relative;
+  height: 350px;
+  width: 100%;
+}
+.error-msg {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+.toggle-icon::before {
+  color: inherit;
+}
+.toggle-icon.fold::after {
+  content: '▶';
+  color: inherit;
+}
+.toggle-icon:not(.fold)::after {
+  content: '▼';
+  color: inherit;
+}
 
-    /* CSS custom properties for theming — dark mode via .dark class */
-    :root {
-      --color-bg: #f3f4f6;
-      --color-surface: #ffffff;
-      --color-border: #d1d5db;
-      --color-text: #1f2937;
-      --color-text-muted: #6b7280;
-      --color-header-bg: #2563eb;
-      --color-error-bg: #fef2f2;
-      --color-error-text: #dc2626;
-      --color-input-bg: #ffffff;
-      --color-input-text: #1f2937;
-      --color-input-border: #d1d5db;
-      --color-table-header-bg: #f3f4f6;
-      --color-table-row-bg: #f9fafb;
-      --color-hover-bg: #eff6ff;
-      --color-edit-bg: #eff6ff;
-    }
-    .dark {
-      --color-bg: #111827;
-      --color-surface: #1f2937;
-      --color-border: #4b5563;
-      --color-text: #f3f4f6;
-      --color-text-muted: #9ca3af;
-      --color-blue: #3b82f6;
-      --color-green: #22c55e;
-      --color-red: #f87171;
-      --color-error-bg: #7f1d1d;
-      --color-error-text: #fca5a5;
-      --color-input-bg: #374151;
-      --color-input-text: #f3f4f6;
-      --color-input-border: #4b5563;
-      --color-table-header-bg: #374151;
-      --color-table-row-bg: #1f2937;
-      --color-hover-bg: #1e3a5f;
-      --color-edit-bg: #1e3a5f;
-    }
+/* Page background — desk photo from aloisio.dev */
+body {
+  background-color: #226e93;
+  background-image: url('../assets/bg-desk.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
 
-    /* Dark mode colors via CSS custom properties — use !important to beat Tailwind */
-    .dark,
-    html.dark {
-      --color-bg: #111827;
-      --color-surface: #1f2937;
-      --color-border: #4b5563;
-      --color-text: #f3f4f6;
-      --color-text-muted: #9ca3af;
-      --color-text-link: #93c5fd;
-      --color-input-bg: #374151;
-      --color-input-text: #f3f4f6;
-      --color-input-border: #4b5563;
-      --color-header-bg: #1f2937;
-      --color-table-header-bg: #374151;
-      --color-table-row-bg: #1f2937;
-      --color-hover-bg: #374151;
-      --color-error-bg: #7f1d1d;
-      --color-error-text: #fca5a5;
-      --color-link-blue: #60a5fa;
-    }
+/* CSS custom properties for theming — dark mode via .dark class */
+:root {
+  --color-bg: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-border: #d1d5db;
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-header-bg: #2563eb;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #dc2626;
+  --color-input-bg: #ffffff;
+  --color-input-text: #1f2937;
+  --color-input-border: #d1d5db;
+  --color-table-header-bg: #f3f4f6;
+  --color-table-row-bg: #f9fafb;
+  --color-hover-bg: #eff6ff;
+  --color-edit-bg: #eff6ff;
+}
+.dark {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-border: #4b5563;
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-blue: #3b82f6;
+  --color-green: #22c55e;
+  --color-red: #f87171;
+  --color-error-bg: #7f1d1d;
+  --color-error-text: #fca5a5;
+  --color-input-bg: #111827;
+  --color-input-text: #f3f4f6;
+  --color-input-border: #4b5563;
+  --color-table-header-bg: #111827;
+  --color-table-row-bg: #111827;
+  --color-hover-bg: #1e3a5f;
+  --color-edit-bg: #1e3a5f;
+}
 
-    /* Apply CSS variables to all relevant elements in dark mode */
-    html.dark body { background-color: var(--color-bg) !important; color: var(--color-text) !important; }
-    html.dark header { background-color: var(--color-header-bg) !important; color: #fff !important; }
-    html.dark .bg-white { background-color: var(--color-surface) !important; }
-    html.dark .bg-gray-50 { background-color: var(--color-table-row-bg) !important; }
-    html.dark .bg-gray-100 { background-color: var(--color-table-header-bg) !important; }
-    html.dark .bg-gray-200 { background-color: var(--color-border) !important; }
-    html.dark .bg-blue-50 { background-color: var(--color-hover-bg) !important; }
-    html.dark .bg-blue-900 { background-color: var(--color-hover-bg) !important; }
-    html.dark .bg-red-50 { background-color: var(--color-error-bg) !important; }
-    html.dark .text-gray-700 { color: var(--color-text) !important; }
-    html.dark .text-gray-600 { color: var(--color-text-muted) !important; }
-    html.dark .text-gray-500 { color: var(--color-text-muted) !important; }
-    html.dark .text-gray-400 { color: var(--color-text-muted) !important; }
-    html.dark .text-gray-300 { color: var(--color-text-muted) !important; }
-    html.dark .text-gray-200 { color: var(--color-text-muted) !important; }
-    html.dark .text-gray-100 { color: var(--color-text-muted) !important; }
-    html.dark .text-black { color: var(--color-text) !important; }
-    html.dark .text-blue-500 { color: var(--color-link-blue) !important; }
-    html.dark .text-blue-200 { color: var(--color-text-muted) !important; }
-    html.dark .text-red-500 { color: #f87171 !important; }
-    html.dark .text-red-600 { color: #f87171 !important; }
-    html.dark .text-green-600 { color: #4ade80 !important; }
-    html.dark .border-gray-200 { border-color: var(--color-border) !important; }
-    html.dark .border-gray-300 { border-color: var(--color-border) !important; }
-    html.dark .border-gray-600 { border-color: var(--color-border) !important; }
-    html.dark input, html.dark select { background-color: var(--color-input-bg) !important; color: var(--color-input-text) !important; border-color: var(--color-input-border) !important; }
-    html.dark .error-msg { color: var(--color-error-text) !important; }
+/* Dark mode colors via CSS custom properties — use !important to beat Tailwind */
+.dark,
+html.dark {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-border: #4b5563;
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-text-link: #93c5fd;
+  --color-input-bg: #111827;
+  --color-input-text: #f3f4f6;
+  --color-input-border: #4b5563;
+  --color-header-bg: #1f2937;
+  --color-table-header-bg: #111827;
+  --color-table-row-bg: #111827;
+  --color-hover-bg: #1e3a5f;
+  --color-error-bg: #7f1d1d;
+  --color-error-text: #fca5a5;
+  --color-link-blue: #60a5fa;
+}
+
+/* Apply CSS variables to all relevant elements in dark mode */
+html.dark body {
+  color: var(--color-text) !important;
+  background-color: #226e93 !important;
+  background-image:
+    linear-gradient(rgba(17, 24, 39, 0.55), rgba(17, 24, 39, 0.55)), url('../assets/bg-desk.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+html.dark header {
+  background-color: var(--color-header-bg) !important;
+  color: #fff !important;
+}
+html.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+html.dark .bg-gray-50 {
+  background-color: var(--color-table-row-bg) !important;
+}
+html.dark .bg-gray-100 {
+  background-color: var(--color-table-header-bg) !important;
+}
+html.dark .bg-gray-200 {
+  background-color: var(--color-border) !important;
+}
+html.dark .bg-gray-700 {
+  background-color: var(--color-table-row-bg) !important;
+}
+html.dark .bg-gray-800 {
+  background-color: var(--color-surface) !important;
+}
+html.dark .bg-blue-50 {
+  background-color: var(--color-hover-bg) !important;
+}
+html.dark .bg-blue-900 {
+  background-color: var(--color-hover-bg) !important;
+}
+html.dark .bg-red-50 {
+  background-color: var(--color-error-bg) !important;
+}
+html.dark .text-gray-700 {
+  color: var(--color-text) !important;
+}
+html.dark .text-gray-600 {
+  color: var(--color-text-muted) !important;
+}
+html.dark .text-gray-500 {
+  color: var(--color-text-muted) !important;
+}
+html.dark .text-gray-400 {
+  color: var(--color-text-muted) !important;
+}
+html.dark .text-gray-300 {
+  color: var(--color-text-muted) !important;
+}
+html.dark .text-gray-200 {
+  color: var(--color-text) !important;
+}
+html.dark .text-gray-100 {
+  color: var(--color-text) !important;
+}
+html.dark .text-black {
+  color: var(--color-text) !important;
+}
+html.dark .text-blue-500 {
+  color: var(--color-link-blue) !important;
+}
+html.dark .text-blue-200 {
+  color: var(--color-text-muted) !important;
+}
+html.dark .text-red-500 {
+  color: #f87171 !important;
+}
+html.dark .text-red-600 {
+  color: #f87171 !important;
+}
+html.dark .text-green-600 {
+  color: #4ade80 !important;
+}
+html.dark .border-gray-200 {
+  border-color: var(--color-border) !important;
+}
+html.dark .border-gray-300 {
+  border-color: var(--color-border) !important;
+}
+html.dark .border-gray-600 {
+  border-color: var(--color-border) !important;
+}
+html.dark input,
+html.dark select {
+  background-color: var(--color-input-bg) !important;
+  color: var(--color-input-text) !important;
+  border-color: var(--color-input-border) !important;
+}
+html.dark .error-msg {
+  color: var(--color-error-text) !important;
+}
