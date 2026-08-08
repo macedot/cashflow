@@ -43,7 +43,7 @@
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-sm text-blue-200">v0.5.0</span>
+          <span class="text-sm text-blue-200">v0.5.1</span>
           <button
             @click="toggleTheme"
             class="text-white hover:text-blue-200 text-2xl"
@@ -1049,6 +1049,32 @@
             const expenseData = chartData.map(r => (r.cashflow < 0 ? r.cashflow : null));
             const balanceData = chartData.map(r => r.balance);
 
+            const AXIS_ORANGE = '#FF4F00';
+            // Must be attached via config.plugins (array); options.plugins only configures registered plugins.
+            // Attach after JSON clones — stringify strips functions.
+            const axisHighlightPlugin = {
+              id: 'axisHighlight',
+              afterDraw(chart) {
+                const yScale = chart.scales.y;
+                const ctx = chart.ctx;
+                const { left, right, top, bottom } = chart.chartArea;
+                // Only highlight y=0 — not the chart-area baseline (scale min)
+                const zeroY = yScale.getPixelForValue(0);
+                if (zeroY < top || zeroY > bottom) {
+                  return;
+                }
+                ctx.save();
+                ctx.strokeStyle = AXIS_ORANGE;
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(left, zeroY);
+                ctx.lineTo(right, zeroY);
+                ctx.stroke();
+                ctx.restore();
+              },
+            };
+
             const chartOptions = {
               responsive: true,
               maintainAspectRatio: false,
@@ -1060,45 +1086,6 @@
                 legend: {
                   display: true,
                   position: 'top',
-                },
-                // Draw a stronger/brighter horizontal line at y=0
-                zeroLine: {
-                  afterDraw: chart => {
-                    const yScale = chart.scales.y;
-                    const ctx = chart.ctx;
-                    const { top, bottom } = chart.chartArea;
-                    const xLeft = chart.chartArea.left;
-                    const xRight = chart.chartArea.right;
-                    const zeroY = yScale.getPixelForValue(0);
-                    if (zeroY >= top && zeroY <= bottom) {
-                      ctx.save();
-                      ctx.strokeStyle = darkMode.value ? '#e5e7eb' : '#374151';
-                      ctx.lineWidth = 2.5;
-                      ctx.setLineDash([]);
-                      ctx.beginPath();
-                      ctx.moveTo(xLeft, zeroY);
-                      ctx.lineTo(xRight, zeroY);
-                      ctx.stroke();
-                      ctx.restore();
-                    }
-                  },
-                },
-                // Draw a stronger x-axis baseline
-                xAxisLine: {
-                  afterDraw: chart => {
-                    const ctx = chart.ctx;
-                    const { left, right, bottom } = chart.chartArea;
-                    const xBottomY = bottom;
-                    ctx.save();
-                    ctx.strokeStyle = darkMode.value ? '#e5e7eb' : '#374151';
-                    ctx.lineWidth = 2.5;
-                    ctx.setLineDash([]);
-                    ctx.beginPath();
-                    ctx.moveTo(left, xBottomY);
-                    ctx.lineTo(right, xBottomY);
-                    ctx.stroke();
-                    ctx.restore();
-                  },
                 },
               },
               scales: {
@@ -1156,6 +1143,7 @@
               inlineConfig.data.datasets[0].categoryPercentage = 0.5;
               inlineConfig.data.datasets[1].barPercentage = 1.0;
               inlineConfig.data.datasets[1].categoryPercentage = 0.5;
+              inlineConfig.plugins = [axisHighlightPlugin];
               cashflowChartInstance = new Chart(cashflowChart.value, inlineConfig);
             }
             if (cashflowChartFullscreen.value) {
@@ -1180,8 +1168,6 @@
                   position: 'top',
                   labels: { color: textColor },
                 },
-                zeroLine: chartOptions.plugins.zeroLine,
-                xAxisLine: chartOptions.plugins.xAxisLine,
               };
               const fullscreenConfig = JSON.parse(JSON.stringify(chartConfig));
               // Set bar spacing per dataset for fullscreen
@@ -1190,6 +1176,7 @@
               fullscreenConfig.data.datasets[1].barPercentage = 1.0;
               fullscreenConfig.data.datasets[1].categoryPercentage = 0.5;
               fullscreenConfig.options = fullscreenOptions;
+              fullscreenConfig.plugins = [axisHighlightPlugin];
               cashflowChartFullscreenInstance = new Chart(
                 cashflowChartFullscreen.value,
                 fullscreenConfig
