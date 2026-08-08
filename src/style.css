@@ -1,7 +1,7 @@
     [v-cloak] { display: none; }
     .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
     .fade-enter-from, .fade-leave-to { opacity: 0; }
-    .chart-container { position: relative; height: 300px; width: 100%; }
+    .chart-container { position: relative; height: 350px; width: 100%; }
     .error-msg { color: var(--color-error); font-size: 0.875rem; margin-top: 0.25rem; }
     .toggle-icon::before { color: inherit; }
     .toggle-icon.fold::after { content: '▶'; color: inherit; }
