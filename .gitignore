@@ -44,6 +44,13 @@
 !src/*.js
 !src/*.css
 
+# ── Static assets ──
+!assets/
+!assets/*.jpg
+!assets/*.jpeg
+!assets/*.png
+!assets/*.webp
+
 # ── Tests ──
 !tests/
 !tests/integration/
