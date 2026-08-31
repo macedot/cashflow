@@ -41,7 +41,7 @@ This is a CDN-only SPA with no build step. To deploy:
 
 1. Push to the `master` branch on GitHub
 2. Enable GitHub Pages in repository settings
-3. App will be available at `https://[username].github.io/cashflow-js/`
+3. App will be available at `https://[username].github.io/cashflow/`
 
 ### Manual Deployment
 
@@ -77,8 +77,8 @@ Simply host `index.html`, `src/cashflow.js`, `src/style.css`, and the `src/` dir
 
 All data is stored in browser localStorage:
 
-- `cf_sim_events` - Saved events
-- `cf_sim_settings` - User preferences (dark mode, currency)
+- `cashflow_events` - Saved events
+- `cashflow_sim_params` - User preferences (dark mode, currency, sim range)
 
 To clear all data: Open browser DevTools → Application → Clear storage
 
