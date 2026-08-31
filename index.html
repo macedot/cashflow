@@ -43,7 +43,7 @@
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-sm text-blue-200">v0.5.1</span>
+          <span class="text-sm text-blue-200">v0.6.0</span>
           <button
             @click="toggleTheme"
             class="text-white hover:text-blue-200 text-2xl"
@@ -1082,10 +1082,18 @@
                 duration: 800,
                 easing: 'easeOutQuart',
               },
+              interaction: {
+                mode: 'index',
+                intersect: false,
+              },
               plugins: {
                 legend: {
                   display: true,
                   position: 'top',
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
                 },
               },
               scales: {
@@ -1097,6 +1105,15 @@
                   barPercentage: 1.0,
                 },
                 y: { beginAtZero: false },
+              },
+            };
+
+            const tooltipCallbacks = {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                if (v === null || v === undefined) return null;
+                const sign = ctx.dataset.label !== 'Balance' && v >= 0 ? '+' : '';
+                return `${ctx.dataset.label}: ${sign}${v.toFixed(2)}`;
               },
             };
 
@@ -1144,6 +1161,7 @@
               inlineConfig.data.datasets[1].barPercentage = 1.0;
               inlineConfig.data.datasets[1].categoryPercentage = 0.5;
               inlineConfig.plugins = [axisHighlightPlugin];
+              inlineConfig.options.plugins.tooltip.callbacks = tooltipCallbacks;
               cashflowChartInstance = new Chart(cashflowChart.value, inlineConfig);
             }
             if (cashflowChartFullscreen.value) {
@@ -1177,6 +1195,7 @@
               fullscreenConfig.data.datasets[1].categoryPercentage = 0.5;
               fullscreenConfig.options = fullscreenOptions;
               fullscreenConfig.plugins = [axisHighlightPlugin];
+              fullscreenConfig.options.plugins.tooltip.callbacks = tooltipCallbacks;
               cashflowChartFullscreenInstance = new Chart(
                 cashflowChartFullscreen.value,
                 fullscreenConfig

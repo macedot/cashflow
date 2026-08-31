@@ -3,7 +3,7 @@
 <p align="center"><strong>Client-side cashflow forecasting and visualization</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/license/macedot/cashflow-js?color=blue" alt="License" />
+  <img src="https://img.shields.io/github/license/macedot/cashflow?color=blue" alt="License" />
   <img src="https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js&logoColor=white" alt="Vue.js" />
   <img src="https://img.shields.io/badge/Chart.js-4.5-FF6384?logo=chart.js&logoColor=white" alt="Chart.js" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
@@ -24,7 +24,7 @@
 - **CSV export** — download events or filtered results
 - **localStorage persistence** — events and settings survive page reloads
 - **Dark mode** — follows OS preference, toggle in header
-- **Period presets** — 1 month, 3 months, 6 months, 1 year, 3 years, custom
+- **Period presets** — 1 month, 3 months, 6 months, 1 year, custom
 - **Zero backend** — all simulation runs in the browser; no data leaves your machine
 
 ## Quick Start
@@ -132,7 +132,7 @@ npm run typecheck     # TypeScript strict mode (JSDoc types)
 
 | Service    | Base Image          | Notes                                                                                                  |
 | ---------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `cashflow` | `nginx:alpine-slim` | Static file server, non-root (UID nginx), read-only rootfs. Published to `ghcr.io/macedot/cashflow-js` |
+| `cashflow` | `nginx:alpine-slim` | Static file server, non-root (UID nginx), read-only rootfs. Published to `ghcr.io/macedot/cashflow` |
 
 ### Security
 
