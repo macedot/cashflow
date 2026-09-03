@@ -1160,7 +1160,11 @@
             // Attach after JSON clones — stringify strips functions.
             const axisHighlightPlugin = {
               id: 'axisHighlight',
-              afterDraw(chart) {
+              // afterDatasetsDraw (not afterDraw): datasets are drawn first,
+              // then this hook, and the Tooltip core plugin draws last in its
+              // own afterDraw — so the zero line sits above bars but the
+              // tooltip renders on top of everything.
+              afterDatasetsDraw(chart) {
                 const yScale = chart.scales.y;
                 const ctx = chart.ctx;
                 const { left, right, top, bottom } = chart.chartArea;

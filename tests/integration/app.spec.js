@@ -109,6 +109,23 @@ test.describe('Cashflow Simulator App', () => {
       };
     });
 
+    // Zero-line plugin must draw in afterDatasetsDraw: its old afterDraw
+    // hook ran after the Tooltip plugin's own afterDraw, painting the
+    // y=0 highlight line on top of the tooltip.
+    const axisHighlightHook = await page.evaluate(() => {
+      const canvas = document.querySelector('canvas');
+      const chart = canvas && Chart.getChart(canvas);
+      const plugin =
+        chart && chart.config.plugins
+          ? chart.config.plugins.find(e => e.id === 'axisHighlight')
+          : null;
+      return (
+        Boolean(plugin) &&
+        typeof plugin.afterDatasetsDraw === 'function' &&
+        plugin.afterDraw === undefined
+      );
+    });
+
     expect(result.chartFound).toBe(true);
     expect(result.tooltipMode).toBe('index');
     expect(result.interactionMode).toBe('index');
@@ -116,6 +133,7 @@ test.describe('Cashflow Simulator App', () => {
     expect(result.sample.balance).toBe('Balance: 1234.56');
     expect(result.sample.income).toBe('Income: +500.00');
     expect(result.sample.expense).toBe('Expense: -200.00');
+    expect(axisHighlightHook).toBe(true);
   });
 
   // date inputs order: simStart, simEnd, new-event startDate, new-event endDate
