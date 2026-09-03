@@ -1,6 +1,6 @@
 {
   "name": "cf-sim",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Visualize your income, expenses, and balance over time",
   "type": "module",
   "scripts": {
