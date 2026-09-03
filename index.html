@@ -187,9 +187,48 @@
                 <thead class="bg-gray-100 dark:bg-gray-700 sticky top-0">
                   <tr>
                     <th class="px-2 py-1 text-left text-gray-700 dark:text-gray-200">Name</th>
-                    <th class="px-2 py-1 text-left text-gray-700 dark:text-gray-200">Period</th>
-                    <th class="px-2 py-1 text-left text-gray-700 dark:text-gray-200">Freq</th>
-                    <th class="px-2 py-1 text-right text-gray-700 dark:text-gray-200">Value</th>
+                    <th
+                      class="px-2 py-1 text-left text-gray-700 dark:text-gray-200"
+                      :aria-sort="ariaSortFor('startDate')"
+                    >
+                      <button
+                        type="button"
+                        class="sort-btn"
+                        :class="{ 'sort-active': isSortedBy('startDate') }"
+                        :title="sortTitle('startDate')"
+                        @click="applyEventSort('startDate')"
+                      >
+                        Period<span class="sort-indicator">{{ sortIndicator('startDate') }}</span>
+                      </button>
+                    </th>
+                    <th
+                      class="px-2 py-1 text-left text-gray-700 dark:text-gray-200"
+                      :aria-sort="ariaSortFor('frequency')"
+                    >
+                      <button
+                        type="button"
+                        class="sort-btn"
+                        :class="{ 'sort-active': isSortedBy('frequency') }"
+                        :title="sortTitle('frequency')"
+                        @click="applyEventSort('frequency')"
+                      >
+                        Freq<span class="sort-indicator">{{ sortIndicator('frequency') }}</span>
+                      </button>
+                    </th>
+                    <th
+                      class="px-2 py-1 text-right text-gray-700 dark:text-gray-200"
+                      :aria-sort="ariaSortFor('value')"
+                    >
+                      <button
+                        type="button"
+                        class="sort-btn"
+                        :class="{ 'sort-active': isSortedBy('value') }"
+                        :title="sortTitle('value')"
+                        @click="applyEventSort('value')"
+                      >
+                        Value<span class="sort-indicator">{{ sortIndicator('value') }}</span>
+                      </button>
+                    </th>
                     <th class="px-2 py-1 text-center text-gray-700 dark:text-gray-200">Action</th>
                   </tr>
                 </thead>
@@ -198,8 +237,17 @@
                   <tr
                     v-for="(event, index) in events"
                     :key="index"
-                    class="border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
-                    :class="{ 'bg-blue-50 dark:bg-blue-900': editingEventIndex === index }"
+                    class="border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600 event-row"
+                    :class="{
+                      'bg-blue-50 dark:bg-blue-900': editingEventIndex === index,
+                      dragging: dragIndex === index,
+                      'drag-over': dragOverIndex === index && dragIndex !== null && dragIndex !== index,
+                    }"
+                    :draggable="editingEventIndex !== index"
+                    @dragstart="onDragStart($event, index)"
+                    @dragover.prevent="onDragOver(index)"
+                    @drop.prevent="onDrop(index)"
+                    @dragend="onDragEnd"
                   >
                     <!-- Display row -->
                     <template v-if="editingEventIndex !== index">
@@ -425,7 +473,8 @@
                 </tbody>
               </table>
               <p class="text-xs text-gray-400 dark:text-gray-400 mt-2">
-                * Required: Start Date and Frequency. Click a row to edit.
+                * Required: Start Date and Frequency. Click a row to edit, drag a row to reorder,
+                click Period/Freq/Value to sort (click again to flip or clear).
               </p>
             </div>
           </div>
@@ -657,6 +706,7 @@
     <script type="module">
       import { runSimulation, FREQUENCIES } from './src/cashflow.js';
       import { normalizeDateInput } from './src/dateInput.js';
+      import { sortEvents, nextEventSort } from './src/eventSort.js';
 
       const { createApp, ref, reactive, computed, nextTick, onMounted, watch } = Vue;
 
@@ -1099,6 +1149,118 @@
               destroyCharts();
               localStorage.removeItem(STORAGE_KEY);
             }
+          }
+
+          // --- Events table sorting & manual reordering ---
+          /** @type {import('vue').Ref<import('./src/eventSort.js').EventSort|null>} */
+          const eventSort = ref(null);
+          /** @type {import('vue').Ref<number|null>} */
+          const dragIndex = ref(null);
+          /** @type {import('vue').Ref<number|null>} */
+          const dragOverIndex = ref(null);
+
+          /**
+           * @param {import('./src/eventSort.js').EventSortKey} key
+           * @returns {boolean}
+           */
+          function isSortedBy(key) {
+            return eventSort.value !== null && eventSort.value.key === key;
+          }
+
+          /**
+           * @param {import('./src/eventSort.js').EventSortKey} key
+           * @returns {string}
+           */
+          function sortIndicator(key) {
+            if (!isSortedBy(key)) return '↕';
+            return eventSort.value?.direction === 'asc' ? '↑' : '↓';
+          }
+
+          /**
+           * @param {import('./src/eventSort.js').EventSortKey} key
+           * @returns {'ascending'|'descending'|'none'}
+           */
+          function ariaSortFor(key) {
+            if (!isSortedBy(key)) return 'none';
+            return eventSort.value?.direction === 'asc' ? 'ascending' : 'descending';
+          }
+
+          /**
+           * @param {import('./src/eventSort.js').EventSortKey} key
+           * @returns {string}
+           */
+          function sortTitle(key) {
+            if (!isSortedBy(key)) return 'Sort by ' + key + ' (ascending)';
+            return eventSort.value?.direction === 'asc'
+              ? 'Sort by ' + key + ' (descending)'
+              : 'Clear sort';
+          }
+
+          /**
+           * Apply the next sort state for a column header click. Sorting
+           * reorders the stored events array, so the visible order persists
+           * across reloads and manual drag positions stay consistent.
+           * @param {import('./src/eventSort.js').EventSortKey} key
+           */
+          function applyEventSort(key) {
+            eventSort.value = nextEventSort(eventSort.value, key);
+            cancelEditEvent();
+            if (eventSort.value) {
+              events.value = sortEvents(
+                events.value,
+                eventSort.value.key,
+                eventSort.value.direction
+              );
+              saveToStorage();
+              autoSimulate();
+            }
+          }
+
+          /**
+           * @param {DragEvent} event
+           * @param {number} index
+           */
+          function onDragStart(event, index) {
+            if (editingEventIndex.value === index) {
+              event.preventDefault();
+              return;
+            }
+            dragIndex.value = index;
+            // Dragging defines a new manual order — the column sort no longer holds.
+            eventSort.value = null;
+            cancelEditEvent();
+            if (event.dataTransfer) {
+              event.dataTransfer.effectAllowed = 'move';
+              // Firefox requires data to be set for the drag to start
+              event.dataTransfer.setData('text/plain', String(index));
+            }
+          }
+
+          /**
+           * @param {number} index
+           */
+          function onDragOver(index) {
+            if (dragIndex.value === null || dragIndex.value === index) return;
+            dragOverIndex.value = index;
+          }
+
+          /**
+           * @param {number} index
+           */
+          function onDrop(index) {
+            const from = dragIndex.value;
+            dragIndex.value = null;
+            dragOverIndex.value = null;
+            if (from === null || from === index) return;
+            const moved = events.value.splice(from, 1)[0];
+            events.value.splice(index, 0, moved);
+            saveToStorage();
+            autoSimulate();
+          }
+
+          function onDragEnd() {
+            dragIndex.value = null;
+            dragOverIndex.value = null;
           }
 
           function autoSimulate() {
@@ -1553,6 +1715,18 @@
             exportEventsCSV,
             exportResultsCSV,
             formatDate,
+            eventSort,
+            dragIndex,
+            dragOverIndex,
+            isSortedBy,
+            sortIndicator,
+            ariaSortFor,
+            sortTitle,
+            applyEventSort,
+            onDragStart,
+            onDragOver,
+            onDrop,
+            onDragEnd,
             darkMode,
             toggleTheme,
             resultsCollapsed,

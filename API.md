@@ -18,6 +18,12 @@ Dependency-free so it can be used by the SPA and tests alike.</p>
 strict ISO YYYY-MM-DD; anything ambiguous or unparseable returns null
 so the caller can warn the user and reject the input.</p>
 </dd>
+<dt><a href="#FREQUENCY_RANK">FREQUENCY_RANK</a></dt>
+<dd><p>Chronological rank of each frequency, shortest recurrence first.</p>
+</dd>
+<dt><a href="#OPEN_ENDED">OPEN_ENDED</a></dt>
+<dd><p>Open-ended events (no endDate) sort after bounded ones in ascending order.</p>
+</dd>
 </dl>
 
 ## Functions
@@ -101,6 +107,29 @@ first two components is &gt; 12); ambiguous cases return null</li>
 <li>Date instances (formatted by their UTC components)</li>
 </ul>
 </dd>
+<dt><a href="#periodValue">periodValue(event)</a> ⇒ <code>string</code></dt>
+<dd><p>Sortable composite of an event&#39;s period: startDate first, then endDate
+(open-ended treated as far future). ISO dates compare lexicographically.</p>
+</dd>
+<dt><a href="#compareStrings">compareStrings(a, b)</a> ⇒ <code>number</code></dt>
+<dd></dd>
+<dt><a href="#frequencyRank">frequencyRank(event)</a> ⇒ <code>number</code></dt>
+<dd></dd>
+<dt><a href="#compareByKey">compareByKey(a, b, key)</a> ⇒ <code>number</code></dt>
+<dd><p>Compare two events by the requested sort key only — secondary tie-breaks
+are applied by sortEvents so they never flip with the direction.</p>
+</dd>
+<dt><a href="#sortEvents">sortEvents(events, key, direction)</a> ⇒ <code><a href="#SortableEvent">Array.&lt;SortableEvent&gt;</a></code></dt>
+<dd><p>Sort events by key and direction without mutating the input.
+Equal keys keep their original relative order (stable), and secondary
+tie-breaks (period, then original index) stay ascending regardless of
+direction so groups of equal rows always appear in a consistent order.</p>
+</dd>
+<dt><a href="#nextEventSort">nextEventSort(current, key)</a> ⇒ <code><a href="#EventSort">EventSort</a></code> | <code>null</code></dt>
+<dd><p>Cycle the sort state when a column header is clicked:
+unsorted → ascending → descending → unsorted. Clicking a different
+column always starts ascending.</p>
+</dd>
 </dl>
 
 ## Typedefs
@@ -112,6 +141,17 @@ first two components is &gt; 12); ambiguous cases return null</li>
 <dd></dd>
 <dt><a href="#CashflowOccurrence">CashflowOccurrence</a> : <code>Object</code></dt>
 <dd></dd>
+<dt><a href="#EventSortKey">EventSortKey</a> : <code>&#x27;startDate&#x27;</code> | <code>&#x27;frequency&#x27;</code> | <code>&#x27;value&#x27;</code></dt>
+<dd></dd>
+<dt><a href="#EventSortDirection">EventSortDirection</a> : <code>&#x27;asc&#x27;</code> | <code>&#x27;desc&#x27;</code></dt>
+<dd></dd>
+<dt><a href="#EventSort">EventSort</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#SortableEvent">SortableEvent</a> : <code>Object</code></dt>
+<dd><p>An event as stored by the SPA: ISO date strings, empty endDate when
+open-ended. Mirrors the engine&#39;s Event type with dates as strings —
+the jsdoc parser used for API.md cannot resolve cross-file typedefs.</p>
+</dd>
 </dl>
 
 <a name="FREQUENCIES"></a>
@@ -146,6 +186,20 @@ Dependency-free so it can be used by the SPA and tests alike.
 Strategy (per product decision): auto-fix recognizable formats into
 strict ISO YYYY-MM-DD; anything ambiguous or unparseable returns null
 so the caller can warn the user and reject the input.
+
+**Kind**: global constant  
+<a name="FREQUENCY_RANK"></a>
+
+## FREQUENCY_RANK
+
+Chronological rank of each frequency, shortest recurrence first.
+
+**Kind**: global constant  
+<a name="OPEN_ENDED"></a>
+
+## OPEN_ENDED
+
+Open-ended events (no endDate) sort after bounded ones in ascending order.
 
 **Kind**: global constant  
 <a name="getNextMonthYear"></a>
@@ -427,6 +481,87 @@ is empty, ambiguous, or not a real calendar date
 | ----- | --------------------------------------------------------------------------------------- | -------------- |
 | input | <code>string</code> \| <code>Date</code> \| <code>null</code> \| <code>undefined</code> | Raw date value |
 
+<a name="periodValue"></a>
+
+## periodValue(event) ⇒ <code>string</code>
+
+Sortable composite of an event's period: startDate first, then endDate
+(open-ended treated as far future). ISO dates compare lexicographically.
+
+**Kind**: global function
+
+| Param | Type                                         |
+| ----- | -------------------------------------------- |
+| event | [<code>SortableEvent</code>](#SortableEvent) |
+
+<a name="compareStrings"></a>
+
+## compareStrings(a, b) ⇒ <code>number</code>
+
+**Kind**: global function
+
+| Param | Type                |
+| ----- | ------------------- |
+| a     | <code>string</code> |
+| b     | <code>string</code> |
+
+<a name="frequencyRank"></a>
+
+## frequencyRank(event) ⇒ <code>number</code>
+
+**Kind**: global function
+
+| Param | Type                                         |
+| ----- | -------------------------------------------- |
+| event | [<code>SortableEvent</code>](#SortableEvent) |
+
+<a name="compareByKey"></a>
+
+## compareByKey(a, b, key) ⇒ <code>number</code>
+
+Compare two events by the requested sort key only — secondary tie-breaks
+are applied by sortEvents so they never flip with the direction.
+
+**Kind**: global function
+
+| Param | Type                                         |
+| ----- | -------------------------------------------- |
+| a     | [<code>SortableEvent</code>](#SortableEvent) |
+| b     | [<code>SortableEvent</code>](#SortableEvent) |
+| key   | [<code>EventSortKey</code>](#EventSortKey)   |
+
+<a name="sortEvents"></a>
+
+## sortEvents(events, key, direction) ⇒ [<code>Array.&lt;SortableEvent&gt;</code>](#SortableEvent)
+
+Sort events by key and direction without mutating the input.
+Equal keys keep their original relative order (stable), and secondary
+tie-breaks (period, then original index) stay ascending regardless of
+direction so groups of equal rows always appear in a consistent order.
+
+**Kind**: global function
+
+| Param     | Type                                                       |
+| --------- | ---------------------------------------------------------- |
+| events    | [<code>Array.&lt;SortableEvent&gt;</code>](#SortableEvent) |
+| key       | [<code>EventSortKey</code>](#EventSortKey)                 |
+| direction | [<code>EventSortDirection</code>](#EventSortDirection)     |
+
+<a name="nextEventSort"></a>
+
+## nextEventSort(current, key) ⇒ [<code>EventSort</code>](#EventSort) \| <code>null</code>
+
+Cycle the sort state when a column header is clicked:
+unsorted → ascending → descending → unsorted. Clicking a different
+column always starts ascending.
+
+**Kind**: global function
+
+| Param   | Type                                                      |
+| ------- | --------------------------------------------------------- |
+| current | [<code>EventSort</code>](#EventSort) \| <code>null</code> |
+| key     | [<code>EventSortKey</code>](#EventSortKey)                |
+
 <a name="Event"></a>
 
 ## Event : <code>Object</code>
@@ -468,3 +603,44 @@ is empty, ambiguous, or not a real calendar date
 | date  | <code>Date</code>   |
 | value | <code>number</code> |
 | name  | <code>string</code> |
+
+<a name="EventSortKey"></a>
+
+## EventSortKey : <code>&#x27;startDate&#x27;</code> \| <code>&#x27;frequency&#x27;</code> \| <code>&#x27;value&#x27;</code>
+
+**Kind**: global typedef  
+<a name="EventSortDirection"></a>
+
+## EventSortDirection : <code>&#x27;asc&#x27;</code> \| <code>&#x27;desc&#x27;</code>
+
+**Kind**: global typedef  
+<a name="EventSort"></a>
+
+## EventSort : <code>Object</code>
+
+**Kind**: global typedef  
+**Properties**
+
+| Name      | Type                                                   |
+| --------- | ------------------------------------------------------ |
+| key       | [<code>EventSortKey</code>](#EventSortKey)             |
+| direction | [<code>EventSortDirection</code>](#EventSortDirection) |
+
+<a name="SortableEvent"></a>
+
+## SortableEvent : <code>Object</code>
+
+An event as stored by the SPA: ISO date strings, empty endDate when
+open-ended. Mirrors the engine's Event type with dates as strings —
+the jsdoc parser used for API.md cannot resolve cross-file typedefs.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name      | Type                | Description                               |
+| --------- | ------------------- | ----------------------------------------- | ------ | ------- | --------- | ----------- | ------ |
+| name      | <code>string</code> |                                           |
+| startDate | <code>string</code> | YYYY-MM-DD                                |
+| endDate   | <code>string</code> | YYYY-MM-DD, or '' when open-ended         |
+| frequency | <code>string</code> | daily                                     | weekly | monthly | quarterly | semi-annual | annual |
+| value     | <code>number</code> | positive for income, negative for expense |

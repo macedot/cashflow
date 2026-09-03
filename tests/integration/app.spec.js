@@ -261,4 +261,82 @@ test.describe('Cashflow Simulator App', () => {
     const bg = await ribbon.evaluate(el => getComputedStyle(el, '::before').backgroundColor);
     expect(bg).toBe('rgb(255, 215, 0)');
   });
+
+  // --- Events table sorting & manual reordering ---
+  // Seed three events with distinct periods, frequencies, and values, in file order: Salary, Gym, Rent
+  async function seedEvents(page) {
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    const csv = [
+      'name,startDate,endDate,frequency,value,currency',
+      'Salary,2026-01-01,,monthly,3000,USD',
+      'Gym,2026-01-03,,weekly,-50,USD',
+      'Rent,2026-01-05,,monthly,-1200,USD',
+    ].join('\n');
+    await page.setInputFiles('input[type="file"]', {
+      name: 'events.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv, 'utf8'),
+    });
+    await expect(page.getByText('Imported 3 events')).toBeVisible();
+  }
+
+  // Scope to the events card: names like "Salary" also appear in the results table,
+  // and "Period" also labels a simulation control
+  const eventsSection = page => page.locator('div.bg-white:has(h2:has-text("Events ("))');
+  const eventRows = page => eventsSection(page).locator('tr.event-row');
+  const expectRowOrder = async (rows, names) => {
+    for (const [i, name] of names.entries()) {
+      await expect(rows.nth(i)).toContainText(name);
+    }
+  };
+
+  test('events table sorts by Period, Freq, and Value headers', async ({ page }) => {
+    await seedEvents(page);
+    const rows = eventRows(page);
+    await expect(rows).toHaveCount(3);
+
+    // Value ascending: most negative first (-1200, -50, +3000)
+    const valueBtn = eventsSection(page).getByRole('button', { name: /^Value/ });
+    // NB: .filter({ has }) with a section-rooted inner locator resolves to
+    // nothing — use the CSS :has() engine instead.
+    const valueTh = eventsSection(page).locator('th:has(button:text("Value"))');
+    await valueBtn.click();
+    await expect(valueTh).toHaveAttribute('aria-sort', 'ascending');
+    await expectRowOrder(rows, ['Rent', 'Gym', 'Salary']);
+
+    // Second click flips to descending
+    await valueBtn.click();
+    await expect(valueTh).toHaveAttribute('aria-sort', 'descending');
+    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+
+    // Third click clears the sort — rows keep the current order
+    await valueBtn.click();
+    await expect(valueTh).toHaveAttribute('aria-sort', 'none');
+    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+
+    // Period ascending: by startDate, open-ended events last
+    await eventsSection(page)
+      .getByRole('button', { name: /^Period/ })
+      .click();
+    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+
+    // Freq ascending: shortest recurrence first; monthly tie broken by period
+    await eventsSection(page).getByRole('button', { name: /^Freq/ }).click();
+    await expectRowOrder(rows, ['Gym', 'Salary', 'Rent']);
+  });
+
+  test('events can be reordered by dragging rows', async ({ page }) => {
+    await seedEvents(page);
+    const rows = eventRows(page);
+    await expect(rows).toHaveCount(3);
+
+    // Drag "Salary" (first row) onto "Rent" (last row) — it takes the target's position
+    await rows.nth(0).dragTo(rows.nth(2));
+    await expectRowOrder(rows, ['Gym', 'Rent', 'Salary']);
+
+    // Manual order persists across reloads
+    await page.reload();
+    await expectRowOrder(eventRows(page), ['Gym', 'Rent', 'Salary']);
+  });
 });
