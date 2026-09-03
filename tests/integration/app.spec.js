@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-/* global Chart, Buffer */
+/* global Chart, Buffer, getComputedStyle */
 
 test.describe('Cashflow Simulator App', () => {
   test.beforeEach(async ({ page }) => {
@@ -174,11 +174,15 @@ test.describe('Cashflow Simulator App', () => {
   });
 
   test('Fork me on GitHub ribbon links to the repo', async ({ page }) => {
-    const ribbon = page.locator('a.github-ribbon');
+    const ribbon = page.locator('a.github-fork-ribbon');
     await expect(ribbon).toBeVisible();
     await expect(ribbon).toHaveText('Fork me on GitHub');
     await expect(ribbon).toHaveAttribute('href', 'https://github.com/macedot/cashflow');
     await expect(ribbon).toHaveAttribute('target', '_blank');
     await expect(ribbon).toHaveAttribute('rel', /noopener/);
+    await expect(ribbon).toHaveAttribute('data-ribbon', 'Fork me on GitHub');
+    // Yellow theme override from src/style.css must win over the CDN default red
+    const bg = await ribbon.evaluate(el => getComputedStyle(el, '::before').backgroundColor);
+    expect(bg).toBe('rgb(255, 215, 0)');
   });
 });

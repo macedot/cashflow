@@ -194,36 +194,16 @@ html.dark .error-msg {
   color: var(--color-error-text) !important;
 }
 
-/* "Fork me on GitHub" diagonal corner ribbon — custom class, themable via vars */
+/* "Fork me on GitHub" ribbon — github-fork-ribbon-css (cdnjs) with a yellow
+   theme override; loaded before this file so these rules win the cascade */
 :root {
-  --ribbon-bg: #b91c1c;
-  --ribbon-bg-hover: #991b1b;
+  --ribbon-bg: #ffd700; /* yellow */
+  --ribbon-text: #151513; /* near-black for contrast on yellow */
 }
-.dark {
-  --ribbon-bg: #991b1b;
-  --ribbon-bg-hover: #7f1d1d;
-}
-.github-ribbon {
-  position: fixed;
-  top: 32px;
-  right: -52px;
-  width: 210px;
-  transform: rotate(45deg);
-  /* Above the header, below the fullscreen chart overlay (z-40) */
-  z-index: 30;
-  padding: 6px 0;
+.github-fork-ribbon:before {
   background-color: var(--ribbon-bg);
-  color: #ffffff;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-decoration: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-.github-ribbon:hover,
-.github-ribbon:focus-visible {
-  background-color: var(--ribbon-bg-hover);
-  color: #ffffff;
-  text-decoration: none;
+.github-fork-ribbon:after {
+  color: var(--ribbon-text);
+  text-shadow: none;
 }
