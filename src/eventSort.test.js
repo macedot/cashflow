@@ -102,6 +102,46 @@ describe('sortEvents', () => {
     ]);
   });
 
+  it('positive-first: incomes by x on top, zeros, then expenses by reversed abs(x)', () => {
+    const events = [
+      ev('Coffee', '2026-02-05', '', 'daily', -50),
+      ev('Salary', '2026-01-01', '', 'monthly', 3000),
+      ev('Refund', '2026-03-01', '', 'weekly', 0),
+      ev('Side job', '2026-02-01', '', 'weekly', 100),
+      ev('Rent', '2026-01-05', '', 'monthly', -1200),
+    ];
+    expect(sortEvents(events, 'value', 'positive-first').map(e => e.name)).toEqual([
+      'Side job',
+      'Salary',
+      'Refund',
+      'Rent',
+      'Coffee',
+    ]);
+  });
+
+  it('positive-first keeps the sign blocks apart, unlike plain descending', () => {
+    const events = [
+      ev('Salary', '2026-01-01', '', 'monthly', 3000),
+      ev('Refund', '2026-03-01', '', 'weekly', 0),
+      ev('Coffee', '2026-02-05', '', 'daily', -50),
+      ev('Side job', '2026-02-01', '', 'weekly', 100),
+    ];
+    // Plain descending: +3000, +100, 0, -50 — the zero splits the incomes
+    expect(sortEvents(events, 'value', 'desc').map(e => e.name)).toEqual([
+      'Salary',
+      'Side job',
+      'Refund',
+      'Coffee',
+    ]);
+    // positive-first: both incomes first (ascending), then zero, then expenses
+    expect(sortEvents(events, 'value', 'positive-first').map(e => e.name)).toEqual([
+      'Side job',
+      'Salary',
+      'Refund',
+      'Coffee',
+    ]);
+  });
+
   it('does not mutate the input array', () => {
     const events = [
       ev('B', '2026-02-01', '', 'monthly', 2),
@@ -133,7 +173,15 @@ describe('nextEventSort', () => {
   });
 
   it('clears the sort after descending', () => {
-    expect(nextEventSort({ key: 'value', direction: 'desc' }, 'value')).toBeNull();
+    expect(nextEventSort({ key: 'frequency', direction: 'desc' }, 'frequency')).toBeNull();
+  });
+
+  it('adds a positive-first state to the Value cycle before clearing', () => {
+    expect(nextEventSort({ key: 'value', direction: 'desc' }, 'value')).toEqual({
+      key: 'value',
+      direction: 'positive-first',
+    });
+    expect(nextEventSort({ key: 'value', direction: 'positive-first' }, 'value')).toBeNull();
   });
 
   it('restarts ascending when switching columns', () => {

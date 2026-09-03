@@ -119,6 +119,10 @@ first two components is &gt; 12); ambiguous cases return null</li>
 <dd><p>Compare two events by the requested sort key only — secondary tie-breaks
 are applied by sortEvents so they never flip with the direction.</p>
 </dd>
+<dt><a href="#signGroup">signGroup(event)</a> ⇒ <code>number</code></dt>
+<dd><p>Sign group for the positive-first value order: income block first,
+then zeros, then the expense block.</p>
+</dd>
 <dt><a href="#sortEvents">sortEvents(events, key, direction)</a> ⇒ <code><a href="#SortableEvent">Array.&lt;SortableEvent&gt;</a></code></dt>
 <dd><p>Sort events by key and direction without mutating the input.
 Equal keys keep their original relative order (stable), and secondary
@@ -127,8 +131,10 @@ direction so groups of equal rows always appear in a consistent order.</p>
 </dd>
 <dt><a href="#nextEventSort">nextEventSort(current, key)</a> ⇒ <code><a href="#EventSort">EventSort</a></code> | <code>null</code></dt>
 <dd><p>Cycle the sort state when a column header is clicked:
-unsorted → ascending → descending → unsorted. Clicking a different
-column always starts ascending.</p>
+unsorted → ascending → descending → unsorted. The Value column adds a
+fourth state (positive values on top, negative values at the bottom):
+ascending → descending → positive-first → unsorted. Clicking a
+different column always starts ascending.</p>
 </dd>
 </dl>
 
@@ -143,8 +149,13 @@ column always starts ascending.</p>
 <dd></dd>
 <dt><a href="#EventSortKey">EventSortKey</a> : <code>&#x27;startDate&#x27;</code> | <code>&#x27;frequency&#x27;</code> | <code>&#x27;value&#x27;</code></dt>
 <dd></dd>
-<dt><a href="#EventSortDirection">EventSortDirection</a> : <code>&#x27;asc&#x27;</code> | <code>&#x27;desc&#x27;</code></dt>
-<dd></dd>
+<dt><a href="#EventSortDirection">EventSortDirection</a> : <code>&#x27;asc&#x27;</code> | <code>&#x27;desc&#x27;</code> | <code>&#x27;positive-first&#x27;</code></dt>
+<dd><p>&#39;positive-first&#39; keeps positive values on top and negative values at the
+bottom, ordered by the rule sort(x) if x &gt; 0 else sort(abs(x)) reversed
+on the negative side — incomes ascending, then zeros, then expenses by
+descending absolute value (largest expense right below the zero line),
+so magnitudes mirror around zero. Only meaningful for &#39;value&#39;.</p>
+</dd>
 <dt><a href="#EventSort">EventSort</a> : <code>Object</code></dt>
 <dd></dd>
 <dt><a href="#SortableEvent">SortableEvent</a> : <code>Object</code></dt>
@@ -530,6 +541,19 @@ are applied by sortEvents so they never flip with the direction.
 | b     | [<code>SortableEvent</code>](#SortableEvent) |
 | key   | [<code>EventSortKey</code>](#EventSortKey)   |
 
+<a name="signGroup"></a>
+
+## signGroup(event) ⇒ <code>number</code>
+
+Sign group for the positive-first value order: income block first,
+then zeros, then the expense block.
+
+**Kind**: global function
+
+| Param | Type                                         |
+| ----- | -------------------------------------------- |
+| event | [<code>SortableEvent</code>](#SortableEvent) |
+
 <a name="sortEvents"></a>
 
 ## sortEvents(events, key, direction) ⇒ [<code>Array.&lt;SortableEvent&gt;</code>](#SortableEvent)
@@ -552,8 +576,10 @@ direction so groups of equal rows always appear in a consistent order.
 ## nextEventSort(current, key) ⇒ [<code>EventSort</code>](#EventSort) \| <code>null</code>
 
 Cycle the sort state when a column header is clicked:
-unsorted → ascending → descending → unsorted. Clicking a different
-column always starts ascending.
+unsorted → ascending → descending → unsorted. The Value column adds a
+fourth state (positive values on top, negative values at the bottom):
+ascending → descending → positive-first → unsorted. Clicking a
+different column always starts ascending.
 
 **Kind**: global function
 
@@ -611,7 +637,13 @@ column always starts ascending.
 **Kind**: global typedef  
 <a name="EventSortDirection"></a>
 
-## EventSortDirection : <code>&#x27;asc&#x27;</code> \| <code>&#x27;desc&#x27;</code>
+## EventSortDirection : <code>&#x27;asc&#x27;</code> \| <code>&#x27;desc&#x27;</code> \| <code>&#x27;positive-first&#x27;</code>
+
+'positive-first' keeps positive values on top and negative values at the
+bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) reversed
+on the negative side — incomes ascending, then zeros, then expenses by
+descending absolute value (largest expense right below the zero line),
+so magnitudes mirror around zero. Only meaningful for 'value'.
 
 **Kind**: global typedef  
 <a name="EventSort"></a>
