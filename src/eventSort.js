@@ -12,7 +12,9 @@ import { FREQUENCIES } from './cashflow.js';
  */
 
 /**
- * @typedef {'asc'|'desc'} EventSortDirection
+ * @typedef {'asc'|'desc'|'positive-first'} EventSortDirection
+ * 'positive-first' groups positive values on top and negative values at the
+ * bottom (value ascending within each group); only meaningful for 'value'.
  */
 
 /**
@@ -102,6 +104,20 @@ function compareByKey(a, b, key) {
 }
 
 /**
+ * Sign group for the positive-first value order: income block first,
+ * then zeros, then the expense block.
+ * @param {SortableEvent} event
+ * @returns {number}
+ */
+function signGroup(event) {
+  const value = Number(event.value) || 0;
+  if (value > 0) {
+    return 0;
+  }
+  return value < 0 ? 2 : 1;
+}
+
+/**
  * Sort events by key and direction without mutating the input.
  * Equal keys keep their original relative order (stable), and secondary
  * tie-breaks (period, then original index) stay ascending regardless of
@@ -116,6 +132,12 @@ export function sortEvents(events, key, direction) {
   return events
     .map((event, index) => ({ event, index }))
     .sort((a, b) => {
+      if (key === 'value' && direction === 'positive-first') {
+        const group = signGroup(a.event) - signGroup(b.event);
+        if (group !== 0) {
+          return group;
+        }
+      }
       const primary = compareByKey(a.event, b.event, key);
       if (primary !== 0) {
         return factor * primary;
@@ -128,8 +150,10 @@ export function sortEvents(events, key, direction) {
 
 /**
  * Cycle the sort state when a column header is clicked:
- * unsorted → ascending → descending → unsorted. Clicking a different
- * column always starts ascending.
+ * unsorted → ascending → descending → unsorted. The Value column adds a
+ * fourth state (positive values on top, negative values at the bottom):
+ * ascending → descending → positive-first → unsorted. Clicking a
+ * different column always starts ascending.
  * @param {EventSort|null} current
  * @param {EventSortKey} key
  * @returns {EventSort|null}
@@ -140,6 +164,9 @@ export function nextEventSort(current, key) {
   }
   if (current.direction === 'asc') {
     return { key, direction: 'desc' };
+  }
+  if (key === 'value' && current.direction === 'desc') {
+    return { key, direction: 'positive-first' };
   }
   return null;
 }

@@ -102,6 +102,35 @@ describe('sortEvents', () => {
     ]);
   });
 
+  it('positive-first puts positives on top, zeros next, negatives at the bottom', () => {
+    const events = [
+      ev('Coffee', '2026-02-05', '', 'daily', -50),
+      ev('Salary', '2026-01-01', '', 'monthly', 3000),
+      ev('Refund', '2026-03-01', '', 'weekly', 0),
+      ev('Side job', '2026-02-01', '', 'weekly', 100),
+      ev('Rent', '2026-01-05', '', 'monthly', -1200),
+    ];
+    expect(sortEvents(events, 'value', 'positive-first').map(e => e.name)).toEqual([
+      'Side job',
+      'Salary',
+      'Refund',
+      'Rent',
+      'Coffee',
+    ]);
+  });
+
+  it('positive-first differs from descending on the negatives block', () => {
+    const events = [
+      ev('Coffee', '2026-02-05', '', 'daily', -50),
+      ev('Rent', '2026-01-05', '', 'monthly', -1200),
+    ];
+    expect(sortEvents(events, 'value', 'desc').map(e => e.name)).toEqual(['Coffee', 'Rent']);
+    expect(sortEvents(events, 'value', 'positive-first').map(e => e.name)).toEqual([
+      'Rent',
+      'Coffee',
+    ]);
+  });
+
   it('does not mutate the input array', () => {
     const events = [
       ev('B', '2026-02-01', '', 'monthly', 2),
@@ -133,7 +162,15 @@ describe('nextEventSort', () => {
   });
 
   it('clears the sort after descending', () => {
-    expect(nextEventSort({ key: 'value', direction: 'desc' }, 'value')).toBeNull();
+    expect(nextEventSort({ key: 'frequency', direction: 'desc' }, 'frequency')).toBeNull();
+  });
+
+  it('adds a positive-first state to the Value cycle before clearing', () => {
+    expect(nextEventSort({ key: 'value', direction: 'desc' }, 'value')).toEqual({
+      key: 'value',
+      direction: 'positive-first',
+    });
+    expect(nextEventSort({ key: 'value', direction: 'positive-first' }, 'value')).toBeNull();
   });
 
   it('restarts ascending when switching columns', () => {

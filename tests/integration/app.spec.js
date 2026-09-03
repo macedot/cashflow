@@ -310,10 +310,16 @@ test.describe('Cashflow Simulator App', () => {
     await expect(valueTh).toHaveAttribute('aria-sort', 'descending');
     await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
 
-    // Third click clears the sort — rows keep the current order
+    // Third click: positives-on-top order (+3000 first, negatives below in
+    // ascending order), reported to assistive tech as aria-sort="other"
+    await valueBtn.click();
+    await expect(valueTh).toHaveAttribute('aria-sort', 'other');
+    await expectRowOrder(rows, ['Salary', 'Rent', 'Gym']);
+
+    // Fourth click clears the sort — rows keep the current order
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'none');
-    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+    await expectRowOrder(rows, ['Salary', 'Rent', 'Gym']);
 
     // Period ascending: by startDate, open-ended events last
     await eventsSection(page)

@@ -57,7 +57,7 @@
           </p>
         </div>
         <div class="flex items-center gap-3 pr-40">
-          <span class="text-sm text-blue-200">v0.6.4</span>
+          <span class="text-sm text-blue-200">v0.6.5</span>
           <button
             @click="toggleTheme"
             class="text-white hover:text-blue-200 text-2xl"
@@ -474,7 +474,8 @@
               </table>
               <p class="text-xs text-gray-400 dark:text-gray-400 mt-2">
                 * Required: Start Date and Frequency. Click a row to edit, drag a row to reorder,
-                click Period/Freq/Value to sort (click again to flip or clear).
+                click Period/Freq/Value to sort (click again to flip or clear; Value adds a
+                positives-on-top order).
               </p>
             </div>
           </div>
@@ -1173,15 +1174,17 @@
            */
           function sortIndicator(key) {
             if (!isSortedBy(key)) return '↕';
+            if (eventSort.value?.direction === 'positive-first') return '±';
             return eventSort.value?.direction === 'asc' ? '↑' : '↓';
           }
 
           /**
            * @param {import('./src/eventSort.js').EventSortKey} key
-           * @returns {'ascending'|'descending'|'none'}
+           * @returns {'ascending'|'descending'|'other'|'none'}
            */
           function ariaSortFor(key) {
             if (!isSortedBy(key)) return 'none';
+            if (eventSort.value?.direction === 'positive-first') return 'other';
             return eventSort.value?.direction === 'asc' ? 'ascending' : 'descending';
           }
 
@@ -1191,6 +1194,9 @@
            */
           function sortTitle(key) {
             if (!isSortedBy(key)) return 'Sort by ' + key + ' (ascending)';
+            if (key === 'value' && eventSort.value?.direction === 'desc') {
+              return 'Sort by value (positives on top)';
+            }
             return eventSort.value?.direction === 'asc'
               ? 'Sort by ' + key + ' (descending)'
               : 'Clear sort';
