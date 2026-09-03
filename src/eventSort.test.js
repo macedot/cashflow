@@ -102,7 +102,7 @@ describe('sortEvents', () => {
     ]);
   });
 
-  it('positive-first: incomes by x on top, zeros, then expenses by abs(x) at the bottom', () => {
+  it('positive-first: incomes by x on top, zeros, then expenses by reversed abs(x)', () => {
     const events = [
       ev('Coffee', '2026-02-05', '', 'daily', -50),
       ev('Salary', '2026-01-01', '', 'monthly', 3000),
@@ -114,8 +114,8 @@ describe('sortEvents', () => {
       'Side job',
       'Salary',
       'Refund',
-      'Coffee',
       'Rent',
+      'Coffee',
     ]);
   });
 

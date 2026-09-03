@@ -14,9 +14,10 @@ import { FREQUENCIES } from './cashflow.js';
 /**
  * @typedef {'asc'|'desc'|'positive-first'} EventSortDirection
  * 'positive-first' keeps positive values on top and negative values at the
- * bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) —
- * incomes ascending, then zeros, then expenses by ascending absolute
- * value (largest expense last). Only meaningful for 'value'.
+ * bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) reversed
+ * on the negative side — incomes ascending, then zeros, then expenses by
+ * descending absolute value (largest expense right below the zero line),
+ * so magnitudes mirror around zero. Only meaningful for 'value'.
  */
 
 /**
@@ -135,18 +136,17 @@ export function sortEvents(events, key, direction) {
     .map((event, index) => ({ event, index }))
     .sort((a, b) => {
       if (key === 'value' && direction === 'positive-first') {
-        const group = signGroup(a.event) - signGroup(b.event);
-        if (group !== 0) {
-          return group;
+        const groupDiff = signGroup(a.event) - signGroup(b.event);
+        if (groupDiff !== 0) {
+          return groupDiff;
         }
-        // Within a block the order is sort(x) if x > 0 else sort(abs(x)).
-        // abs(x) === x for positives and zeros, so comparing magnitudes
-        // covers all blocks and puts the largest expense last.
-        const byMagnitude =
-          Math.abs(Number(a.event.value) || 0) - Math.abs(Number(b.event.value) || 0);
-        if (byMagnitude !== 0) {
-          return byMagnitude;
-        }
+        // Here a and b share a block. Positives sort by x ascending;
+        // expenses (block 2) by abs(x) descending so the largest expense
+        // sits right below the zero line and absolute values mirror
+        // around it.
+        const av = Math.abs(Number(a.event.value) || 0);
+        const bv = Math.abs(Number(b.event.value) || 0);
+        return signGroup(a.event) === 2 ? bv - av : av - bv;
       } else {
         const primary = compareByKey(a.event, b.event, key);
         if (primary !== 0) {

@@ -151,9 +151,10 @@ different column always starts ascending.</p>
 <dd></dd>
 <dt><a href="#EventSortDirection">EventSortDirection</a> : <code>&#x27;asc&#x27;</code> | <code>&#x27;desc&#x27;</code> | <code>&#x27;positive-first&#x27;</code></dt>
 <dd><p>&#39;positive-first&#39; keeps positive values on top and negative values at the
-bottom, ordered by the rule sort(x) if x &gt; 0 else sort(abs(x)) —
-incomes ascending, then zeros, then expenses by ascending absolute
-value (largest expense last). Only meaningful for &#39;value&#39;.</p>
+bottom, ordered by the rule sort(x) if x &gt; 0 else sort(abs(x)) reversed
+on the negative side — incomes ascending, then zeros, then expenses by
+descending absolute value (largest expense right below the zero line),
+so magnitudes mirror around zero. Only meaningful for &#39;value&#39;.</p>
 </dd>
 <dt><a href="#EventSort">EventSort</a> : <code>Object</code></dt>
 <dd></dd>
@@ -639,9 +640,10 @@ different column always starts ascending.
 ## EventSortDirection : <code>&#x27;asc&#x27;</code> \| <code>&#x27;desc&#x27;</code> \| <code>&#x27;positive-first&#x27;</code>
 
 'positive-first' keeps positive values on top and negative values at the
-bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) —
-incomes ascending, then zeros, then expenses by ascending absolute
-value (largest expense last). Only meaningful for 'value'.
+bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) reversed
+on the negative side — incomes ascending, then zeros, then expenses by
+descending absolute value (largest expense right below the zero line),
+so magnitudes mirror around zero. Only meaningful for 'value'.
 
 **Kind**: global typedef  
 <a name="EventSort"></a>

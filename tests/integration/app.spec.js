@@ -321,16 +321,17 @@ test.describe('Cashflow Simulator App', () => {
     await expectRowOrder(rows, ['Salary', 'Bonus', 'Gym', 'Rent']);
 
     // Third click: positives-on-top — incomes first by x (Bonus +100, then
-    // Salary +3000), then expenses by abs(x) (Gym -50, then Rent -1200),
-    // reported to assistive tech as aria-sort="other"
+    // Salary +3000), then expenses by reversed abs(x) (Rent -1200, then
+    // Gym -50) so magnitudes mirror around zero, reported to assistive
+    // tech as aria-sort="other"
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'other');
-    await expectRowOrder(rows, ['Bonus', 'Salary', 'Gym', 'Rent']);
+    await expectRowOrder(rows, ['Bonus', 'Salary', 'Rent', 'Gym']);
 
     // Fourth click clears the sort — rows keep the current order
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'none');
-    await expectRowOrder(rows, ['Bonus', 'Salary', 'Gym', 'Rent']);
+    await expectRowOrder(rows, ['Bonus', 'Salary', 'Rent', 'Gym']);
 
     // Period ascending: by startDate, open-ended events last
     await eventsSection(page)
