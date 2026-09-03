@@ -83,7 +83,7 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 - Coverage enforced at 80% across all metrics (configured in `vitest.config.js`)
 - New features require unit tests. E2E tests for new user flows.
 
-## Release & Deploy
+## Versioning & Deploy
 
 - Version is bumped manually in `package.json`, `package-lock.json`, and the badge in `index.html`
 - Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`cashflow.macedot.dev`); the deploy artifact contains only `index.html` and `src/`
