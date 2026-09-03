@@ -116,7 +116,9 @@ npm run typecheck     # TypeScript strict mode (JSDoc types)
 
 ## Deployment
 
-Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages ([cashflow.macedot.dev](https://cashflow.macedot.dev)). The deploy artifact contains only `index.html` and `src/`.
+Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages ([macedot.github.io/cashflow](https://macedot.github.io/cashflow/)). The deploy artifact contains only `index.html` and `src/` — repo files such as docs, tests, and configs are not published.
+
+The custom domain `cashflow.macedot.dev` is served separately by Cloudflare Pages from this repository.
 
 ### Security
 

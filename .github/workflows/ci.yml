@@ -66,6 +66,7 @@ jobs:
           mkdir -p _pages
           cp index.html _pages/
           cp -R src _pages/src
+          rm -f _pages/src/*.test.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

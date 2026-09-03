@@ -86,7 +86,8 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 ## Versioning & Deploy
 
 - Version is bumped manually in `package.json`, `package-lock.json`, and the badge in `index.html`
-- Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`cashflow.macedot.dev`); the deploy artifact contains only `index.html` and `src/`
+- Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`macedot.github.io/cashflow`); the deploy artifact contains only `index.html` and `src/`
+- The custom domain `cashflow.macedot.dev` is served by Cloudflare Pages from this repository (not by GitHub Pages)
 
 ## Documentation
 
