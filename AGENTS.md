@@ -94,4 +94,3 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 - [API.md](API.md) — auto-generated from JSDoc (`npm run docs`)
 - [docs/architecture.md](docs/architecture.md) — system diagrams, data flow
 - [docs/runbooks.md](docs/runbooks.md) — dev setup, deployment, troubleshooting, localStorage keys
-- [CLAUDE.md](CLAUDE.md) — Claude Code-specific guidance (detailed Vue patterns, Chart.js setup, event editing state)

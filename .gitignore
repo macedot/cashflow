@@ -8,12 +8,10 @@
 !.gitignore
 !AGENTS.md
 !API.md
-!CLAUDE.md
 !README.md
 !LICENSE
 !.prettierrc
 !.jscpd.json
-!.env.example
 !eslint.config.js
 !knip.jsonc
 !package.json
@@ -60,8 +58,6 @@
 !.claude/
 !.claude/skills/
 !.claude/skills/**
-!.skills/
-!.skills/**
 
 # ── Docker ──
 !Dockerfile
