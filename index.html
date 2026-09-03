@@ -25,6 +25,15 @@
     <link href="./src/style.css" rel="stylesheet" />
   </head>
   <body class="min-h-screen">
+    <a
+      href="https://github.com/macedot/cashflow"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="github-ribbon"
+      aria-label="Fork me on GitHub"
+    >
+      Fork me on GitHub
+    </a>
     <div
       id="app-load-error"
       style="display: none; padding: 2rem; text-align: center; color: #dc2626"
@@ -42,8 +51,8 @@
             Visualize your income, expenses, and balance over time
           </p>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="text-sm text-blue-200">v0.6.0</span>
+        <div class="flex items-center gap-3 pr-40">
+          <span class="text-sm text-blue-200">v0.6.1</span>
           <button
             @click="toggleTheme"
             class="text-white hover:text-blue-200 text-2xl"
@@ -257,6 +266,9 @@
                         <p v-if="formError.startDate" class="error-msg text-xs">
                           {{ formError.startDate }}
                         </p>
+                        <p v-if="formError.endDate" class="error-msg text-xs">
+                          {{ formError.endDate }}
+                        </p>
                       </td>
                       <td class="px-1 py-1">
                         <select
@@ -346,6 +358,9 @@
                       </div>
                       <p v-if="formError.startDate" class="error-msg text-xs">
                         {{ formError.startDate }}
+                      </p>
+                      <p v-if="formError.endDate" class="error-msg text-xs">
+                        {{ formError.endDate }}
                       </p>
                     </td>
                     <td class="px-1 py-1">
@@ -558,6 +573,7 @@
 
     <script type="module">
       import { runSimulation, FREQUENCIES } from './src/cashflow.js';
+      import { normalizeDateInput } from './src/dateInput.js';
 
       const { createApp, ref, reactive, computed, nextTick, onMounted, watch } = Vue;
 
@@ -627,16 +643,16 @@
               default:
                 return;
             }
-            simStart.value = formatDate(start);
-            simEnd.value = formatDate(end);
+            simStart.value = formatLocalDate(start);
+            simEnd.value = formatLocalDate(end);
           }
 
           // Expand simulation period to cover all current events
           function expandSimPeriodForEvents() {
             if (events.value.length === 0) return;
             const today = new Date();
-            const todayStr = formatDate(today);
-            const oneYearLater = formatDate(
+            const todayStr = formatLocalDate(today);
+            const oneYearLater = formatLocalDate(
               new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
             );
             let earliestStart = null;
@@ -728,7 +744,7 @@
           });
           const newEventDraft = reactive({
             name: '',
-            startDate: formatDate(new Date()),
+            startDate: formatLocalDate(new Date()),
             endDate: '',
             frequency: '',
             value: 0,
@@ -738,7 +754,7 @@
              */
             currency: 'USD',
           });
-          const formError = reactive({ name: '', startDate: '', frequency: '' });
+          const formError = reactive({ name: '', startDate: '', endDate: '', frequency: '' });
 
           // Results
           const results = ref([]);
@@ -855,6 +871,26 @@
             if (!draft.startDate) {
               formError.startDate = 'Start date is required';
               valid = false;
+            } else {
+              const normalizedStart = normalizeDateInput(draft.startDate);
+              if (normalizedStart === null) {
+                formError.startDate = 'Invalid start date — use YYYY-MM-DD';
+                valid = false;
+              } else {
+                draft.startDate = normalizedStart;
+              }
+            }
+            if (draft.endDate) {
+              const normalizedEnd = normalizeDateInput(draft.endDate);
+              if (normalizedEnd === null) {
+                formError.endDate = 'Invalid end date — use YYYY-MM-DD';
+                valid = false;
+              } else if (formError.startDate === '' && normalizedEnd < draft.startDate) {
+                formError.endDate = 'End date must be after start date';
+                valid = false;
+              } else {
+                draft.endDate = normalizedEnd;
+              }
             }
             if (!draft.frequency) {
               formError.frequency = 'Frequency is required';
@@ -874,6 +910,7 @@
             editDraft.currency = event.currency || 'USD';
             formError.name = '';
             formError.startDate = '';
+            formError.endDate = '';
             formError.frequency = '';
           }
 
@@ -899,6 +936,7 @@
             editingEventIndex.value = null;
             formError.name = '';
             formError.startDate = '';
+            formError.endDate = '';
             formError.frequency = '';
           }
 
@@ -916,13 +954,14 @@
             saveToStorage();
             // Reset new event draft
             newEventDraft.name = '';
-            newEventDraft.startDate = formatDate(new Date());
+            newEventDraft.startDate = formatLocalDate(new Date());
             newEventDraft.endDate = '';
             newEventDraft.frequency = '';
             newEventDraft.value = 0;
             newEventDraft.currency = 'USD';
             formError.name = '';
             formError.startDate = '';
+            formError.endDate = '';
             formError.frequency = '';
             autoSimulate();
           }
@@ -955,6 +994,8 @@
           }
 
           // --- CSV import ---
+          const VALID_FREQUENCIES = new Set(Object.values(FREQUENCIES));
+
           function importCSV(event) {
             csvError.value = '';
             csvSuccess.value = '';
@@ -965,21 +1006,55 @@
               header: true,
               complete: parsed => {
                 let imported = 0;
-                let skipped = 0;
+                let fixedDates = 0;
+                const skipped = {
+                  missing: 0,
+                  date: 0,
+                  frequency: 0,
+                  value: 0,
+                  order: 0,
+                };
                 for (const row of parsed.data) {
                   if (!row.startDate || !row.frequency) {
-                    skipped++;
+                    skipped.missing++;
+                    continue;
+                  }
+                  const startDate = normalizeDateInput(row.startDate);
+                  if (startDate === null) {
+                    skipped.date++;
+                    continue;
+                  }
+                  let endDate = '';
+                  if (row.endDate && row.endDate.trim() !== '') {
+                    endDate = normalizeDateInput(row.endDate);
+                    if (endDate === null) {
+                      skipped.date++;
+                      continue;
+                    }
+                    if (endDate < startDate) {
+                      skipped.order++;
+                      continue;
+                    }
+                  }
+                  if (!VALID_FREQUENCIES.has(row.frequency)) {
+                    skipped.frequency++;
                     continue;
                   }
                   const value = parseFloat(row.value);
                   if (isNaN(value)) {
-                    skipped++;
+                    skipped.value++;
                     continue;
+                  }
+                  if (
+                    startDate !== row.startDate.trim() ||
+                    (endDate && endDate !== row.endDate.trim())
+                  ) {
+                    fixedDates++;
                   }
                   events.value.push({
                     name: row.name || '',
-                    startDate: row.startDate,
-                    endDate: row.endDate || '',
+                    startDate: startDate,
+                    endDate: endDate,
                     frequency: row.frequency,
                     value: value,
                     // Currency is optional in CSV — defaults to 'USD' if missing
@@ -987,7 +1062,24 @@
                   });
                   imported++;
                 }
-                csvSuccess.value = `Imported ${imported} events${skipped > 0 ? `, skipped ${skipped} rows` : ''}`;
+                const totalSkipped = Object.values(skipped).reduce((a, b) => a + b, 0);
+                let message = `Imported ${imported} events`;
+                if (totalSkipped > 0) {
+                  message += `, skipped ${totalSkipped} rows`;
+                }
+                const details = [];
+                if (fixedDates > 0) details.push(`${fixedDates} date(s) auto-fixed`);
+                if (skipped.date > 0) details.push(`${skipped.date} invalid date(s)`);
+                if (skipped.order > 0)
+                  details.push(`${skipped.order} end date(s) before start date(s)`);
+                if (skipped.frequency > 0)
+                  details.push(`${skipped.frequency} invalid frequenc(ies)`);
+                if (skipped.value > 0) details.push(`${skipped.value} invalid value(s)`);
+                if (skipped.missing > 0) details.push(`${skipped.missing} missing field(s)`);
+                if (details.length > 0) {
+                  message += ' — ' + details.join(', ');
+                }
+                csvSuccess.value = message;
                 if (imported > 0) saveToStorage();
                 event.target.value = '';
                 if (imported > 0) {
@@ -1011,13 +1103,22 @@
             simError.value = '';
             if (!validateSimDates()) return;
 
-            hasRunSimulation.value = true;
-            results.value = runSimulation(
-              events.value,
-              initialBalance.value,
-              simStart.value,
-              simEnd.value
-            );
+            try {
+              hasRunSimulation.value = true;
+              results.value = runSimulation(
+                events.value,
+                initialBalance.value,
+                simStart.value,
+                simEnd.value
+              );
+            } catch (err) {
+              results.value = [];
+              hasRunSimulation.value = false;
+              destroyCharts();
+              simError.value =
+                err instanceof Error ? err.message : 'Simulation failed: unexpected error';
+              return;
+            }
             destroyCharts();
             nextTick(() => renderCharts());
             // Track simulation run in Plausible analytics
@@ -1272,13 +1373,35 @@
           }
 
           // --- Utilities ---
+          /**
+           * Format a simulation/engine date (UTC-midnight based) as YYYY-MM-DD.
+           * Uses UTC getters so dates round-trip exactly as stored, regardless
+           * of the browser's timezone.
+           * @param {Date|string} date
+           * @returns {string}
+           */
           function formatDate(date) {
             if (!date) return '';
             const d = date instanceof Date ? date : new Date(date);
             if (isNaN(d.getTime())) return '';
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
+            const y = d.getUTCFullYear();
+            const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(d.getUTCDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+          }
+
+          /**
+           * Format a locally-constructed Date (e.g. "today" defaults and
+           * period presets) as YYYY-MM-DD using local calendar components.
+           * @param {Date} date
+           * @returns {string}
+           */
+          function formatLocalDate(date) {
+            if (!date) return '';
+            if (isNaN(date.getTime())) return '';
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
             return `${y}-${m}-${day}`;
           }
 
