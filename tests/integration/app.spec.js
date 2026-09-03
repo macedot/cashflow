@@ -219,6 +219,36 @@ test.describe('Cashflow Simulator App', () => {
     await expect(page.getByText('Ghost', { exact: true })).toHaveCount(0);
   });
 
+  test('CSV import keeps open-ended events running past a bounded event endDate', async ({
+    page,
+  }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    await page.locator('input[type="date"]').nth(0).fill('2026-01-01'); // sim start
+    await page.locator('input[type="date"]').nth(1).fill('2026-03-01'); // sim end
+
+    const csv = [
+      'name,startDate,endDate,frequency,value,currency',
+      'Salary,2026-08-28,,monthly,500,USD',
+      'Loan,2026-08-12,2027-12-12,monthly,-470,USD',
+    ].join('\n');
+    await page.setInputFiles('input[type="file"]', {
+      name: 'events.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv, 'utf8'),
+    });
+
+    await expect(page.locator('text=Imported 2 events')).toBeVisible();
+
+    const table = resultsTable(page);
+    // The whole horizon must not collapse onto the loan's endDate:
+    // loan's last payment is on its endDate (inclusive)...
+    await expect(table.locator('tr', { hasText: '2027-12-12' })).toHaveCount(1);
+    // ...and the open-ended salary still pays on 2027-12-28, past the loan's end
+    await expect(table.locator('tr', { hasText: '2027-12-28' })).toHaveCount(1);
+  });
+
   test('Fork me on GitHub ribbon links to the repo', async ({ page }) => {
     const ribbon = page.locator('a.github-fork-ribbon');
     await expect(ribbon).toBeVisible();
