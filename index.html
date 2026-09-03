@@ -730,6 +730,24 @@
             simEnd.value = formatLocalDate(end);
           }
 
+          /**
+           * Add one month to a YYYY-MM-DD string, clamping the day to the
+           * target month's length (2027-01-31 → 2027-02-28).
+           * @param {string} iso - Date in YYYY-MM-DD format
+           * @returns {string}
+           */
+          function addOneMonthISO(iso) {
+            const parts = iso.split('-').map(Number);
+            const y = /** @type {number} */ (parts[0]);
+            const m = /** @type {number} */ (parts[1]);
+            const d = /** @type {number} */ (parts[2]);
+            const nextYear = m === 12 ? y + 1 : y;
+            const nextMonth = m === 12 ? 1 : m + 1;
+            const daysInMonth = new Date(Date.UTC(nextYear, nextMonth, 0)).getUTCDate();
+            const nextDay = String(Math.min(d, daysInMonth)).padStart(2, '0');
+            return `${nextYear}-${String(nextMonth).padStart(2, '0')}-${nextDay}`;
+          }
+
           // Expand simulation period to cover all current events
           function expandSimPeriodForEvents() {
             if (events.value.length === 0) return;
@@ -756,10 +774,19 @@
             if (earliestStart && earliestStart < simStart.value) {
               simStart.value = earliestStart;
             }
-            // Expand end: prefer latestEnd, fallback to today+1year if events have no endDate
-            if (latestEnd && latestEnd > simEnd.value) {
-              simEnd.value = latestEnd;
-            } else if (!latestEnd || latestEnd < todayStr) {
+            // Expand end to cover bounded events. When open-ended events
+            // exist, extend one month past the last bounded end so their
+            // recurrence stays visible beyond it — otherwise the whole
+            // simulation would stop at that event's endDate (e.g. a loan
+            // ending mid-salary-cycle would hide the next salary payment).
+            const hasOpenEnded = events.value.some(ev => ev.startDate && !ev.endDate);
+            let desiredEnd = latestEnd;
+            if (hasOpenEnded && desiredEnd) {
+              desiredEnd = addOneMonthISO(desiredEnd);
+            }
+            if (desiredEnd && desiredEnd > simEnd.value) {
+              simEnd.value = desiredEnd;
+            } else if (!desiredEnd || desiredEnd < todayStr) {
               simEnd.value = oneYearLater;
             }
             simPeriodPreset.value = 'custom';
