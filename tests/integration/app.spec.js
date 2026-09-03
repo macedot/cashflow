@@ -59,7 +59,35 @@ test.describe('Cashflow Simulator App', () => {
   });
 
   test('CSV export functionality exists', async ({ page }) => {
-    await expect(page.locator('text=Export CSV')).toBeVisible();
+    await expect(page.locator('text=Export CSV').first()).toBeVisible();
+  });
+
+  test('results table has its own Export CSV button that downloads results', async ({ page }) => {
+    const resultsSection = page.locator('div.bg-white:has(h2:has-text("Results ("))').first();
+    const exportButton = resultsSection.getByRole('button', { name: 'Export CSV' });
+    await expect(exportButton).toBeVisible();
+
+    const [download] = await Promise.all([page.waitForEvent('download'), exportButton.click()]);
+    expect(download.suggestedFilename()).toBe('cashflow-results.csv');
+  });
+
+  test('results table fullscreen toggle opens and closes overlay', async ({ page }) => {
+    const resultsSection = page.locator('div.bg-white:has(h2:has-text("Results ("))').first();
+    await resultsSection.getByRole('button', { name: '⛶' }).click();
+
+    const overlay = page.locator('.fixed.inset-0.z-50:has-text("Results (")');
+    await expect(overlay).toBeVisible();
+    await expect(overlay.getByRole('columnheader', { name: 'Date' })).toBeVisible();
+
+    // Close via ✕ button
+    await overlay.getByRole('button', { name: '✕' }).click();
+    await expect(overlay).toBeHidden();
+
+    // Reopen and close via Escape
+    await resultsSection.getByRole('button', { name: '⛶' }).click();
+    await expect(overlay).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(overlay).toBeHidden();
   });
 
   test('CSV import functionality exists', async ({ page }) => {
