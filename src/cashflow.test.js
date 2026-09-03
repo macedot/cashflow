@@ -6,7 +6,7 @@ import { runSimulation, FREQUENCIES, isValidDate, parseDate } from './cashflow.j
  * @returns {string}
  */
 function fmt(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /**
@@ -44,8 +44,18 @@ describe('runSimulation', () => {
   describe('monthly frequency', () => {
     it('fires on startDate every month', () => {
       const r = runSimulation(
-        [{ name: 'Salary', startDate: '2025-01-01', endDate: '2025-03-01', frequency: 'monthly', value: 5000 }],
-        1000, '2025-01-01', '2025-03-31'
+        [
+          {
+            name: 'Salary',
+            startDate: '2025-01-01',
+            endDate: '2025-03-01',
+            frequency: 'monthly',
+            value: 5000,
+          },
+        ],
+        1000,
+        '2025-01-01',
+        '2025-03-31'
       );
       expect(r.filter(e => e.cashflow !== 0).length).toBe(3);
       expect(getCashflows(r.filter(e => e.cashflow !== 0))).toEqual([5000, 5000, 5000]);
@@ -53,8 +63,18 @@ describe('runSimulation', () => {
 
     it('balance carries forward on days without events', () => {
       const r = runSimulation(
-        [{ name: 'Salary', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 1000 }],
-        500, '2025-01-01', '2025-01-05'
+        [
+          {
+            name: 'Salary',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 1000,
+          },
+        ],
+        500,
+        '2025-01-01',
+        '2025-01-05'
       );
       // Jan1: +1000 = 1500, Jan2-5: 0, balance stays 1500
       expect(r[0].balance).toBe(1500);
@@ -64,8 +84,18 @@ describe('runSimulation', () => {
 
     it('month overflow: Jan 31 + 1 month = Feb 28', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2025-01-31', endDate: '2025-02-28', frequency: 'monthly', value: 100 }],
-        0, '2025-01-31', '2025-02-28'
+        [
+          {
+            name: 'E',
+            startDate: '2025-01-31',
+            endDate: '2025-02-28',
+            frequency: 'monthly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-31',
+        '2025-02-28'
       );
       // Only 2 events: Jan31 and Feb28
       const eventDays = r.filter(e => e.cashflow !== 0);
@@ -76,8 +106,18 @@ describe('runSimulation', () => {
 
     it('month overflow: Jan 31 + 1 month in leap year = Feb 29', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2024-01-31', endDate: '2024-02-29', frequency: 'monthly', value: 100 }],
-        0, '2024-01-31', '2024-02-29'
+        [
+          {
+            name: 'E',
+            startDate: '2024-01-31',
+            endDate: '2024-02-29',
+            frequency: 'monthly',
+            value: 100,
+          },
+        ],
+        0,
+        '2024-01-31',
+        '2024-02-29'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(2);
@@ -89,8 +129,18 @@ describe('runSimulation', () => {
   describe('weekly frequency', () => {
     it('fires every 7 days', () => {
       const r = runSimulation(
-        [{ name: 'W', startDate: '2025-01-01', endDate: '2025-01-22', frequency: 'weekly', value: 100 }],
-        0, '2025-01-01', '2025-01-22'
+        [
+          {
+            name: 'W',
+            startDate: '2025-01-01',
+            endDate: '2025-01-22',
+            frequency: 'weekly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-01-22'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(4); // Jan1, Jan8, Jan15, Jan22
@@ -104,8 +154,18 @@ describe('runSimulation', () => {
   describe('daily frequency', () => {
     it('fires every day', () => {
       const r = runSimulation(
-        [{ name: 'D', startDate: '2025-01-01', endDate: '2025-01-03', frequency: 'daily', value: 10 }],
-        0, '2025-01-01', '2025-01-03'
+        [
+          {
+            name: 'D',
+            startDate: '2025-01-01',
+            endDate: '2025-01-03',
+            frequency: 'daily',
+            value: 10,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-01-03'
       );
       expect(r.filter(e => e.cashflow !== 0).length).toBe(3);
     });
@@ -114,8 +174,18 @@ describe('runSimulation', () => {
   describe('quarterly frequency', () => {
     it('fires every 3 months', () => {
       const r = runSimulation(
-        [{ name: 'Q', startDate: '2025-01-01', endDate: '2025-10-01', frequency: 'quarterly', value: 3000 }],
-        0, '2025-01-01', '2025-10-01'
+        [
+          {
+            name: 'Q',
+            startDate: '2025-01-01',
+            endDate: '2025-10-01',
+            frequency: 'quarterly',
+            value: 3000,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-10-01'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(4); // Jan1, Apr1, Jul1, Oct1
@@ -129,8 +199,18 @@ describe('runSimulation', () => {
   describe('semi-annual frequency', () => {
     it('fires every 6 months', () => {
       const r = runSimulation(
-        [{ name: 'S', startDate: '2025-01-01', endDate: '2025-12-31', frequency: 'semi-annual', value: 6000 }],
-        0, '2025-01-01', '2025-12-31'
+        [
+          {
+            name: 'S',
+            startDate: '2025-01-01',
+            endDate: '2025-12-31',
+            frequency: 'semi-annual',
+            value: 6000,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-12-31'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(2); // Jan1, Jul1
@@ -142,8 +222,18 @@ describe('runSimulation', () => {
   describe('annual frequency', () => {
     it('fires once per year', () => {
       const r = runSimulation(
-        [{ name: 'A', startDate: '2025-01-01', endDate: '2027-01-01', frequency: 'annual', value: 12000 }],
-        0, '2025-01-01', '2027-12-31'
+        [
+          {
+            name: 'A',
+            startDate: '2025-01-01',
+            endDate: '2027-01-01',
+            frequency: 'annual',
+            value: 12000,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2027-12-31'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(3);
@@ -154,8 +244,18 @@ describe('runSimulation', () => {
 
     it('Feb 29 in leap year → Feb 28 in non-leap year', () => {
       const r = runSimulation(
-        [{ name: 'A', startDate: '2024-02-29', endDate: '2025-02-28', frequency: 'annual', value: 100 }],
-        0, '2024-02-29', '2025-02-28'
+        [
+          {
+            name: 'A',
+            startDate: '2024-02-29',
+            endDate: '2025-02-28',
+            frequency: 'annual',
+            value: 100,
+          },
+        ],
+        0,
+        '2024-02-29',
+        '2025-02-28'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(2);
@@ -165,8 +265,18 @@ describe('runSimulation', () => {
 
     it('Feb 28 in non-leap year → Feb 28 next year', () => {
       const r = runSimulation(
-        [{ name: 'A', startDate: '2025-02-28', endDate: '2027-02-28', frequency: 'annual', value: 100 }],
-        0, '2025-02-28', '2027-02-28'
+        [
+          {
+            name: 'A',
+            startDate: '2025-02-28',
+            endDate: '2027-02-28',
+            frequency: 'annual',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-02-28',
+        '2027-02-28'
       );
       const eventDays = r.filter(e => e.cashflow !== 0);
       expect(eventDays.length).toBe(3);
@@ -178,20 +288,54 @@ describe('runSimulation', () => {
 
   describe('multiple events on same day', () => {
     it('cashflows are summed', () => {
-      const r = runSimulation([
-        { name: 'Salary', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 5000 },
-        { name: 'Bonus', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 1000 },
-      ], 1000, '2025-01-01', '2025-01-01');
+      const r = runSimulation(
+        [
+          {
+            name: 'Salary',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 5000,
+          },
+          {
+            name: 'Bonus',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 1000,
+          },
+        ],
+        1000,
+        '2025-01-01',
+        '2025-01-01'
+      );
       expect(r.length).toBe(1);
       expect(r[0].cashflow).toBe(6000);
       expect(r[0].balance).toBe(7000);
     });
 
     it('items array contains all event names', () => {
-      const r = runSimulation([
-        { name: 'Salary', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 5000 },
-        { name: 'Bonus', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 1000 },
-      ], 0, '2025-01-01', '2025-01-01');
+      const r = runSimulation(
+        [
+          {
+            name: 'Salary',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 5000,
+          },
+          {
+            name: 'Bonus',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 1000,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-01-01'
+      );
       expect(r[0].items).toContain('Salary');
       expect(r[0].items).toContain('Bonus');
     });
@@ -200,24 +344,54 @@ describe('runSimulation', () => {
   describe('date range clipping', () => {
     it('event before simStart is ignored', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2024-01-01', endDate: '2024-06-01', frequency: 'monthly', value: 100 }],
-        0, '2025-01-01', '2025-03-31'
+        [
+          {
+            name: 'E',
+            startDate: '2024-01-01',
+            endDate: '2024-06-01',
+            frequency: 'monthly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-03-31'
       );
       expect(r.every(e => e.cashflow === 0)).toBe(true);
     });
 
     it('event after simEnd is ignored', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2026-01-01', endDate: '2026-06-01', frequency: 'monthly', value: 100 }],
-        0, '2025-01-01', '2025-03-31'
+        [
+          {
+            name: 'E',
+            startDate: '2026-01-01',
+            endDate: '2026-06-01',
+            frequency: 'monthly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-03-31'
       );
       expect(r.every(e => e.cashflow === 0)).toBe(true);
     });
 
     it('event partially overlapping sim range is clipped', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2024-01-01', endDate: '2025-02-15', frequency: 'monthly', value: 100 }],
-        0, '2025-01-01', '2025-03-31'
+        [
+          {
+            name: 'E',
+            startDate: '2024-01-01',
+            endDate: '2025-02-15',
+            frequency: 'monthly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-03-31'
       );
       // Only fires Jan1 and Feb1 (before Feb15), next would be Mar1 which is after Feb15 end
       const eventDays = r.filter(e => e.cashflow !== 0);
@@ -230,8 +404,18 @@ describe('runSimulation', () => {
   describe('zero-value events', () => {
     it('event with value=0 generates no cashflow entries', () => {
       const r = runSimulation(
-        [{ name: 'E', startDate: '2025-01-01', endDate: '2025-03-31', frequency: 'monthly', value: 0 }],
-        1000, '2025-01-01', '2025-03-31'
+        [
+          {
+            name: 'E',
+            startDate: '2025-01-01',
+            endDate: '2025-03-31',
+            frequency: 'monthly',
+            value: 0,
+          },
+        ],
+        1000,
+        '2025-01-01',
+        '2025-03-31'
       );
       // generateEventCashflows would generate occurrences but value=0
       // The runSimulation sums values, so 0-value events produce 0 cashflow
@@ -242,18 +426,45 @@ describe('runSimulation', () => {
   describe('expense events', () => {
     it('negative value decreases balance', () => {
       const r = runSimulation(
-        [{ name: 'Rent', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: -1500 }],
-        5000, '2025-01-01', '2025-01-01'
+        [
+          {
+            name: 'Rent',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: -1500,
+          },
+        ],
+        5000,
+        '2025-01-01',
+        '2025-01-01'
       );
       expect(r[0].cashflow).toBe(-1500);
       expect(r[0].balance).toBe(3500);
     });
 
     it('income and expense on same day net correctly', () => {
-      const r = runSimulation([
-        { name: 'Salary', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: 5000 },
-        { name: 'Rent', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'monthly', value: -1500 },
-      ], 1000, '2025-01-01', '2025-01-01');
+      const r = runSimulation(
+        [
+          {
+            name: 'Salary',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: 5000,
+          },
+          {
+            name: 'Rent',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'monthly',
+            value: -1500,
+          },
+        ],
+        1000,
+        '2025-01-01',
+        '2025-01-01'
+      );
       expect(r[0].cashflow).toBe(3500);
       expect(r[0].balance).toBe(4500);
     });
@@ -301,10 +512,22 @@ describe('isValidDate', () => {
 
 describe('frequency validation', () => {
   it('unknown frequency throws descriptive error', () => {
-    expect(() => runSimulation(
-      [{ name: 'E', startDate: '2025-01-01', endDate: '2025-01-01', frequency: 'biweekly', value: 100 }],
-      0, '2025-01-01', '2025-01-01'
-    )).toThrow(/biweekly/);
+    expect(() =>
+      runSimulation(
+        [
+          {
+            name: 'E',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+            frequency: 'biweekly',
+            value: 100,
+          },
+        ],
+        0,
+        '2025-01-01',
+        '2025-01-01'
+      )
+    ).toThrow(/biweekly/);
   });
 });
 

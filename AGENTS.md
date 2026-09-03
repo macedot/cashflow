@@ -32,14 +32,15 @@ python3 -m http.server 8080  # local dev (ES modules require HTTP, not file://)
 
 ### File Responsibilities
 
-| File                            | Role                                                                                   | Key Rule                                                                                                  |
-| ------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `index.html` (~1300 lines)      | Vue 3 SPA — ALL app logic (chart rendering, events CRUD, dark mode, CSV, localStorage) | Do NOT add more logic here. Extract to `src/` when possible.                                              |
-| `src/cashflow.js`               | Pure simulation engine. Zero dependencies. Only JS built-ins.                          | Exports: `runSimulation`, `generateEventCashflows`, `parseDate`, `isValidDate`, `FREQUENCIES`. Keep pure. |
-| `src/logger.js`                 | Structured logger with PII redaction.                                                  | Exports: `debug`, `info`, `warn`, `error`. Use instead of raw `console.*` in new code.                    |
-| `src/style.css`                 | Custom CSS only — Tailwind overrides, dark mode, chart container, error messages.      | No business logic here.                                                                                   |
-| `src/cashflow.test.js`          | Vitest unit tests (~30 tests). Runs in Node environment (no browser).                  | Add tests for all new simulation logic.                                                                   |
-| `tests/integration/app.spec.js` | Playwright E2E test. Chromium only.                                                    | Flows that touch the full SPA go here.                                                                    |
+| File                            | Role                                                                                   | Key Rule                                                                                                                                           |
+| ------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.html` (~1300 lines)      | Vue 3 SPA — ALL app logic (chart rendering, events CRUD, dark mode, CSV, localStorage) | Do NOT add more logic here. Extract to `src/` when possible.                                                                                       |
+| `src/cashflow.js`               | Pure simulation engine. Zero dependencies. Only JS built-ins.                          | Exports: `runSimulation`, `generateEventCashflows`, `parseDate`, `isValidDate`, `FREQUENCIES`. Keep pure. Throws on unparseable startDate/endDate. |
+| `src/dateInput.js`              | Date input normalization — auto-fixes recognizable formats to ISO, rejects the rest.   | Exports: `normalizeDateInput`. Used by the SPA for form/CSV validation. Unit tests in `src/dateInput.test.js`.                                     |
+| `src/logger.js`                 | Structured logger with PII redaction.                                                  | Exports: `debug`, `info`, `warn`, `error`. Use instead of raw `console.*` in new code.                                                             |
+| `src/style.css`                 | Custom CSS only — Tailwind overrides, dark mode, chart container, error messages.      | No business logic here.                                                                                                                            |
+| `src/cashflow.test.js`          | Vitest unit tests (~30 tests). Runs in Node environment (no browser).                  | Add tests for all new simulation logic.                                                                                                            |
+| `tests/integration/app.spec.js` | Playwright E2E test. Chromium only.                                                    | Flows that touch the full SPA go here.                                                                                                             |
 
 ### Dark Mode (Critical Gotcha)
 
