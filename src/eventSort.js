@@ -13,8 +13,10 @@ import { FREQUENCIES } from './cashflow.js';
 
 /**
  * @typedef {'asc'|'desc'|'positive-first'} EventSortDirection
- * 'positive-first' groups positive values on top and negative values at the
- * bottom (value ascending within each group); only meaningful for 'value'.
+ * 'positive-first' keeps positive values on top and negative values at the
+ * bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) —
+ * incomes ascending, then zeros, then expenses by ascending absolute
+ * value (largest expense last). Only meaningful for 'value'.
  */
 
 /**
@@ -137,10 +139,19 @@ export function sortEvents(events, key, direction) {
         if (group !== 0) {
           return group;
         }
-      }
-      const primary = compareByKey(a.event, b.event, key);
-      if (primary !== 0) {
-        return factor * primary;
+        // Within a block the order is sort(x) if x > 0 else sort(abs(x)).
+        // abs(x) === x for positives and zeros, so comparing magnitudes
+        // covers all blocks and puts the largest expense last.
+        const byMagnitude =
+          Math.abs(Number(a.event.value) || 0) - Math.abs(Number(b.event.value) || 0);
+        if (byMagnitude !== 0) {
+          return byMagnitude;
+        }
+      } else {
+        const primary = compareByKey(a.event, b.event, key);
+        if (primary !== 0) {
+          return factor * primary;
+        }
       }
       const period = compareStrings(periodValue(a.event), periodValue(b.event));
       return period !== 0 ? period : a.index - b.index;

@@ -293,43 +293,54 @@ test.describe('Cashflow Simulator App', () => {
 
   test('events table sorts by Period, Freq, and Value headers', async ({ page }) => {
     await seedEvents(page);
+    // A second income event makes every Value-sort state visibly distinct
+    await page.setInputFiles('input[type="file"]', {
+      name: 'events.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        'name,startDate,endDate,frequency,value,currency\nBonus,2026-01-02,,annual,100,USD\n',
+        'utf8'
+      ),
+    });
+    await expect(page.getByText('Imported 1 events')).toBeVisible();
     const rows = eventRows(page);
-    await expect(rows).toHaveCount(3);
+    await expect(rows).toHaveCount(4);
 
-    // Value ascending: most negative first (-1200, -50, +3000)
+    // Value ascending: most negative first (-1200, -50, +100, +3000)
     const valueBtn = eventsSection(page).getByRole('button', { name: /^Value/ });
     // NB: .filter({ has }) with a section-rooted inner locator resolves to
     // nothing — use the CSS :has() engine instead.
     const valueTh = eventsSection(page).locator('th:has(button:text("Value"))');
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'ascending');
-    await expectRowOrder(rows, ['Rent', 'Gym', 'Salary']);
+    await expectRowOrder(rows, ['Rent', 'Gym', 'Bonus', 'Salary']);
 
     // Second click flips to descending
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'descending');
-    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+    await expectRowOrder(rows, ['Salary', 'Bonus', 'Gym', 'Rent']);
 
-    // Third click: positives-on-top order (+3000 first, negatives below in
-    // ascending order), reported to assistive tech as aria-sort="other"
+    // Third click: positives-on-top — incomes first by x (Bonus +100, then
+    // Salary +3000), then expenses by abs(x) (Gym -50, then Rent -1200),
+    // reported to assistive tech as aria-sort="other"
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'other');
-    await expectRowOrder(rows, ['Salary', 'Rent', 'Gym']);
+    await expectRowOrder(rows, ['Bonus', 'Salary', 'Gym', 'Rent']);
 
     // Fourth click clears the sort — rows keep the current order
     await valueBtn.click();
     await expect(valueTh).toHaveAttribute('aria-sort', 'none');
-    await expectRowOrder(rows, ['Salary', 'Rent', 'Gym']);
+    await expectRowOrder(rows, ['Bonus', 'Salary', 'Gym', 'Rent']);
 
     // Period ascending: by startDate, open-ended events last
     await eventsSection(page)
       .getByRole('button', { name: /^Period/ })
       .click();
-    await expectRowOrder(rows, ['Salary', 'Gym', 'Rent']);
+    await expectRowOrder(rows, ['Salary', 'Bonus', 'Gym', 'Rent']);
 
-    // Freq ascending: shortest recurrence first; monthly tie broken by period
+    // Freq ascending: shortest recurrence first; ties broken by period
     await eventsSection(page).getByRole('button', { name: /^Freq/ }).click();
-    await expectRowOrder(rows, ['Gym', 'Salary', 'Rent']);
+    await expectRowOrder(rows, ['Gym', 'Salary', 'Rent', 'Bonus']);
   });
 
   test('events can be reordered by dragging rows', async ({ page }) => {

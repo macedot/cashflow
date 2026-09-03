@@ -102,7 +102,7 @@ describe('sortEvents', () => {
     ]);
   });
 
-  it('positive-first puts positives on top, zeros next, negatives at the bottom', () => {
+  it('positive-first: incomes by x on top, zeros, then expenses by abs(x) at the bottom', () => {
     const events = [
       ev('Coffee', '2026-02-05', '', 'daily', -50),
       ev('Salary', '2026-01-01', '', 'monthly', 3000),
@@ -114,19 +114,30 @@ describe('sortEvents', () => {
       'Side job',
       'Salary',
       'Refund',
-      'Rent',
       'Coffee',
+      'Rent',
     ]);
   });
 
-  it('positive-first differs from descending on the negatives block', () => {
+  it('positive-first keeps the sign blocks apart, unlike plain descending', () => {
     const events = [
+      ev('Salary', '2026-01-01', '', 'monthly', 3000),
+      ev('Refund', '2026-03-01', '', 'weekly', 0),
       ev('Coffee', '2026-02-05', '', 'daily', -50),
-      ev('Rent', '2026-01-05', '', 'monthly', -1200),
+      ev('Side job', '2026-02-01', '', 'weekly', 100),
     ];
-    expect(sortEvents(events, 'value', 'desc').map(e => e.name)).toEqual(['Coffee', 'Rent']);
+    // Plain descending: +3000, +100, 0, -50 — the zero splits the incomes
+    expect(sortEvents(events, 'value', 'desc').map(e => e.name)).toEqual([
+      'Salary',
+      'Side job',
+      'Refund',
+      'Coffee',
+    ]);
+    // positive-first: both incomes first (ascending), then zero, then expenses
     expect(sortEvents(events, 'value', 'positive-first').map(e => e.name)).toEqual([
-      'Rent',
+      'Side job',
+      'Salary',
+      'Refund',
       'Coffee',
     ]);
   });

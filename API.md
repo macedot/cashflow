@@ -150,8 +150,10 @@ different column always starts ascending.</p>
 <dt><a href="#EventSortKey">EventSortKey</a> : <code>&#x27;startDate&#x27;</code> | <code>&#x27;frequency&#x27;</code> | <code>&#x27;value&#x27;</code></dt>
 <dd></dd>
 <dt><a href="#EventSortDirection">EventSortDirection</a> : <code>&#x27;asc&#x27;</code> | <code>&#x27;desc&#x27;</code> | <code>&#x27;positive-first&#x27;</code></dt>
-<dd><p>&#39;positive-first&#39; groups positive values on top and negative values at the
-bottom (value ascending within each group); only meaningful for &#39;value&#39;.</p>
+<dd><p>&#39;positive-first&#39; keeps positive values on top and negative values at the
+bottom, ordered by the rule sort(x) if x &gt; 0 else sort(abs(x)) —
+incomes ascending, then zeros, then expenses by ascending absolute
+value (largest expense last). Only meaningful for &#39;value&#39;.</p>
 </dd>
 <dt><a href="#EventSort">EventSort</a> : <code>Object</code></dt>
 <dd></dd>
@@ -636,8 +638,10 @@ different column always starts ascending.
 
 ## EventSortDirection : <code>&#x27;asc&#x27;</code> \| <code>&#x27;desc&#x27;</code> \| <code>&#x27;positive-first&#x27;</code>
 
-'positive-first' groups positive values on top and negative values at the
-bottom (value ascending within each group); only meaningful for 'value'.
+'positive-first' keeps positive values on top and negative values at the
+bottom, ordered by the rule sort(x) if x > 0 else sort(abs(x)) —
+incomes ascending, then zeros, then expenses by ascending absolute
+value (largest expense last). Only meaningful for 'value'.
 
 **Kind**: global typedef  
 <a name="EventSort"></a>
