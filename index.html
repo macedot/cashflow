@@ -22,15 +22,20 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css"
+    />
     <link href="./src/style.css" rel="stylesheet" />
   </head>
   <body class="min-h-screen">
     <a
+      class="github-fork-ribbon fixed right-top"
       href="https://github.com/macedot/cashflow"
       target="_blank"
       rel="noopener noreferrer"
-      class="github-ribbon"
-      aria-label="Fork me on GitHub"
+      data-ribbon="Fork me on GitHub"
+      title="Fork me on GitHub"
     >
       Fork me on GitHub
     </a>
@@ -52,7 +57,7 @@
           </p>
         </div>
         <div class="flex items-center gap-3 pr-40">
-          <span class="text-sm text-blue-200">v0.6.1</span>
+          <span class="text-sm text-blue-200">v0.6.2</span>
           <button
             @click="toggleTheme"
             class="text-white hover:text-blue-200 text-2xl"
@@ -1155,7 +1160,11 @@
             // Attach after JSON clones — stringify strips functions.
             const axisHighlightPlugin = {
               id: 'axisHighlight',
-              afterDraw(chart) {
+              // afterDatasetsDraw (not afterDraw): datasets are drawn first,
+              // then this hook, and the Tooltip core plugin draws last in its
+              // own afterDraw — so the zero line sits above bars but the
+              // tooltip renders on top of everything.
+              afterDatasetsDraw(chart) {
                 const yScale = chart.scales.y;
                 const ctx = chart.ctx;
                 const { left, right, top, bottom } = chart.chartArea;

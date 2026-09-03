@@ -77,6 +77,8 @@ node_modules/
 coverage/
 dist/
 report/
+playwright-report/
+test-results/
 *.log
 .DS_Store
 Thumbs.db

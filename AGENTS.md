@@ -72,7 +72,7 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 - **ESLint**: `eqeqeq: "always"`, `curly: "all"`, `no-var`, `prefer-const`, `complexity: max 10`, `max-lines: 600`, `require-await`, `no-console: warn` (allows debug/info/warn/error)
 - **TODO/FIXME**: must reference an issue — `TODO(#123): description`, `FIXME(#456): description`
 - **Coverage thresholds**: statements 80%, branches 80%, functions 80%, lines 80%
-- **Commit style**: Conventional Commits. AI-authored commits include `Co-Authored-By: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>`
+- **Commit style**: Conventional Commits.
 - **Branches**: `feature/*`, `fix/*`, `readiness/*`
 - **Pre-commit hook** (Husky): `lint-staged` runs ESLint fix + Prettier on staged `.js`; Prettier on `.json/.md/.css/.html`
 

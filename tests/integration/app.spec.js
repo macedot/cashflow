@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-/* global Chart, Buffer */
+/* global Chart, Buffer, getComputedStyle */
 
 test.describe('Cashflow Simulator App', () => {
   test.beforeEach(async ({ page }) => {
@@ -109,6 +109,23 @@ test.describe('Cashflow Simulator App', () => {
       };
     });
 
+    // Zero-line plugin must draw in afterDatasetsDraw: its old afterDraw
+    // hook ran after the Tooltip plugin's own afterDraw, painting the
+    // y=0 highlight line on top of the tooltip.
+    const axisHighlightHook = await page.evaluate(() => {
+      const canvas = document.querySelector('canvas');
+      const chart = canvas && Chart.getChart(canvas);
+      const plugin =
+        chart && chart.config.plugins
+          ? chart.config.plugins.find(e => e.id === 'axisHighlight')
+          : null;
+      return (
+        Boolean(plugin) &&
+        typeof plugin.afterDatasetsDraw === 'function' &&
+        plugin.afterDraw === undefined
+      );
+    });
+
     expect(result.chartFound).toBe(true);
     expect(result.tooltipMode).toBe('index');
     expect(result.interactionMode).toBe('index');
@@ -116,6 +133,75 @@ test.describe('Cashflow Simulator App', () => {
     expect(result.sample.balance).toBe('Balance: 1234.56');
     expect(result.sample.income).toBe('Income: +500.00');
     expect(result.sample.expense).toBe('Expense: -200.00');
+    expect(axisHighlightHook).toBe(true);
+  });
+
+  // date inputs order: simStart, simEnd, new-event startDate, new-event endDate
+  const resultsTable = page => page.locator('table.w-full.text-sm');
+
+  test('expense stops recurring after its end date', async ({ page }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    await page.locator('input[type="date"]').nth(0).fill('2025-01-01'); // sim start
+    await page.locator('input[type="date"]').nth(1).fill('2025-06-30'); // sim end
+    await page.fill('input[placeholder="Event name"]', 'Rent');
+    await page.locator('input[type="date"]').nth(2).fill('2025-01-01'); // event start
+    await page.locator('input[type="date"]').nth(3).fill('2025-03-01'); // event end
+    await page.selectOption('select:has(option[value="monthly"])', 'monthly');
+    await page.fill('input[placeholder="0.00"]', '-1500');
+    await page.click('button[title="Add event"]');
+
+    const table = resultsTable(page);
+    await expect(table.locator('tr', { hasText: '2025-01-01' })).toHaveCount(1);
+    await expect(table.locator('tr', { hasText: '2025-02-01' })).toHaveCount(1);
+    await expect(table.locator('tr', { hasText: '2025-03-01' })).toHaveCount(1);
+    await expect(table.locator('tr', { hasText: '2025-04-01' })).toHaveCount(0);
+    await expect(table.locator('tr', { hasText: '2025-05-01' })).toHaveCount(0);
+    await expect(table.locator('tr', { hasText: '2025-06-01' })).toHaveCount(0);
+  });
+
+  test('CSV import auto-fixes unambiguous dates and reports skipped rows', async ({ page }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    await page.locator('input[type="date"]').nth(0).fill('2025-01-01'); // sim start
+    await page.locator('input[type="date"]').nth(1).fill('2025-06-30'); // sim end
+
+    const csv = [
+      'name,startDate,endDate,frequency,value,currency',
+      'Rent,15/01/2025,15/03/2025,monthly,-100,USD',
+      'Ghost,15/01/2025,31/02/2025,monthly,-100,USD',
+    ].join('\n');
+    await page.setInputFiles('input[type="file"]', {
+      name: 'events.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv, 'utf8'),
+    });
+
+    await expect(page.locator('text=1 date(s) auto-fixed')).toBeVisible();
+    await expect(page.locator('text=1 invalid date(s)')).toBeVisible();
+
+    const table = resultsTable(page);
+    // Rent appears in the Items column on each of its 3 occurrence dates
+    await expect(table.locator('tr', { hasText: 'Rent' })).toHaveCount(3);
+    await expect(table.locator('tr', { hasText: '2025-01-15' })).toHaveCount(1);
+    await expect(table.locator('tr', { hasText: '2025-03-15' })).toHaveCount(1);
+    await expect(table.locator('tr', { hasText: '2025-04-15' })).toHaveCount(0);
+    await expect(page.getByText('Ghost', { exact: true })).toHaveCount(0);
+  });
+
+  test('Fork me on GitHub ribbon links to the repo', async ({ page }) => {
+    const ribbon = page.locator('a.github-fork-ribbon');
+    await expect(ribbon).toBeVisible();
+    await expect(ribbon).toHaveText('Fork me on GitHub');
+    await expect(ribbon).toHaveAttribute('href', 'https://github.com/macedot/cashflow');
+    await expect(ribbon).toHaveAttribute('target', '_blank');
+    await expect(ribbon).toHaveAttribute('rel', /noopener/);
+    await expect(ribbon).toHaveAttribute('data-ribbon', 'Fork me on GitHub');
+    // Yellow theme override from src/style.css must win over the CDN default red
+    const bg = await ribbon.evaluate(el => getComputedStyle(el, '::before').backgroundColor);
+    expect(bg).toBe('rgb(255, 215, 0)');
   });
 
   // date inputs order: simStart, simEnd, new-event startDate, new-event endDate
