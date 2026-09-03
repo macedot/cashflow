@@ -14,8 +14,7 @@
     "format": "prettier --write \"src/**/*.js\"",
     "typecheck": "tsc --noEmit",
     "knip": "knip",
-    "jscpd": "jscpd --config .jscpd.json",
-    "docs": "jsdoc2md src/cashflow.js src/dateInput.js src/eventSort.js > API.md"
+    "jscpd": "jscpd --config .jscpd.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -24,7 +23,6 @@
     "eslint": "^10.1.0",
     "eslint-plugin-boundaries": "^6.0.2",
     "jscpd": "^4.0.8",
-    "jsdoc-to-markdown": "^9.1.3",
     "knip": "^6.0.4",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",

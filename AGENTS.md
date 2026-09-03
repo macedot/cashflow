@@ -21,7 +21,6 @@ npm run format           # Prettier on src/**/*.js
 npm run typecheck        # tsc --noEmit (strict mode, JSDoc types, checkJs)
 npm run knip             # unused dependency check
 npm run jscpd            # duplicate code check (threshold: 3)
-npm run docs             # regenerate API.md from JSDoc (jsdoc-to-markdown)
 python3 -m http.server 8080  # local dev (ES modules require HTTP, not file://)
 ```
 
@@ -90,4 +89,4 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 
 ## Documentation
 
-- [API.md](API.md) — auto-generated from JSDoc (`npm run docs`)
+API reference lives in the JSDoc comments in `src/*.js` (previously generated into API.md; regenerate on demand with `jsdoc2md` if ever needed).
