@@ -16,7 +16,6 @@
     "knip": "knip",
     "jscpd": "jscpd --config .jscpd.json",
     "prepare": "husky",
-    "release": "release-please release",
     "docs": "jsdoc2md src/cashflow.js src/dateInput.js src/eventSort.js > API.md"
   },
   "lint-staged": {
@@ -40,7 +39,6 @@
     "knip": "^6.0.4",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
-    "release-please": "^17.3.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.1"
   }

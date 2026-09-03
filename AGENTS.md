@@ -22,7 +22,6 @@ npm run typecheck        # tsc --noEmit (strict mode, JSDoc types, checkJs)
 npm run knip             # unused dependency check
 npm run jscpd            # duplicate code check (threshold: 3)
 npm run docs             # regenerate API.md from JSDoc (jsdoc-to-markdown)
-npm run release          # release-please (conventional commits)
 python3 -m http.server 8080  # local dev (ES modules require HTTP, not file://)
 ```
 
@@ -86,8 +85,8 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 
 ## Release & Deploy
 
-- `npm run release` (release-please) bumps version from conventional commits
-- Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`cashflow.macedot.dev`)
+- Version is bumped manually in `package.json`, `package-lock.json`, and the badge in `index.html`
+- Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages (`cashflow.macedot.dev`); the deploy artifact contains only `index.html` and `src/`
 
 ## Documentation
 

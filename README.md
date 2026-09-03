@@ -6,7 +6,6 @@
   <img src="https://img.shields.io/github/license/macedot/cashflow?color=blue" alt="License" />
   <img src="https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js&logoColor=white" alt="Vue.js" />
   <img src="https://img.shields.io/badge/Chart.js-4.5-FF6384?logo=chart.js&logoColor=white" alt="Chart.js" />
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
 </p>
 
 ---
@@ -30,23 +29,10 @@
 ## Quick Start
 
 ```bash
-docker compose up --build
-```
-
-Open [http://localhost:8080](http://localhost:8080).
-
-### Pre-built images (from GitHub release)
-
-```bash
-GHCR_OWNER=macedot IMAGE_TAG=latest docker compose up
-```
-
-### Local development (no Docker)
-
-```bash
 python3 -m http.server 8080
-# Open http://localhost:8080
 ```
+
+Open [http://localhost:8080](http://localhost:8080). ES modules require HTTP — opening `index.html` from the filesystem will not work.
 
 ## Configuration
 
@@ -130,22 +116,16 @@ npm run typecheck     # TypeScript strict mode (JSDoc types)
 
 ## Deployment
 
-| Service    | Base Image          | Notes                                                                                                  |
-| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `cashflow` | `nginx:alpine-slim` | Static file server, non-root (UID nginx), read-only rootfs. Published to `ghcr.io/macedot/cashflow` |
+Push to `master` → GitHub Actions runs CI → deploys to GitHub Pages ([cashflow.macedot.dev](https://cashflow.macedot.dev)). The deploy artifact contains only `index.html` and `src/`.
 
 ### Security
 
 - **Zero backend** — no server, no API, no database. All computation and storage is client-side
-- **Non-root container** — runs as `nginx` user inside the container
-- **Read-only rootfs** — container filesystem is read-only with tmpfs for nginx runtime
-- **No-new-privileges** — kernel privilege escalation disabled
-- **Resource limits** — 64MB memory, 0.25 CPU
 - **Privacy** — no analytics, no tracking, no cookies beyond localStorage for app data
 
 ## CI/CD
 
-GitHub Actions runs lint, typecheck, and tests on every push. On published releases (non-prerelease), a Docker image is built and pushed to GHCR with version tag + `latest`.
+GitHub Actions runs lint, typecheck, unit tests, unused-dependency and duplicate-code checks on every push and PR to `master`. Merges to `master` deploy to GitHub Pages.
 
 ## License
 

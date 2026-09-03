@@ -59,11 +59,6 @@
 !.claude/skills/
 !.claude/skills/**
 
-# ── Docker ──
-!Dockerfile
-!.dockerignore
-!docker-compose.yml
-
 # ── Dev container ──
 !.devcontainer/
 !.devcontainer/**
