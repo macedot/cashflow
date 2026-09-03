@@ -15,17 +15,7 @@
     "typecheck": "tsc --noEmit",
     "knip": "knip",
     "jscpd": "jscpd --config .jscpd.json",
-    "prepare": "husky",
     "docs": "jsdoc2md src/cashflow.js src/dateInput.js src/eventSort.js > API.md"
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,css,html}": [
-      "prettier --write"
-    ]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -33,11 +23,9 @@
     "@vitest/coverage-v8": "^4.1.1",
     "eslint": "^10.1.0",
     "eslint-plugin-boundaries": "^6.0.2",
-    "husky": "^9.1.7",
     "jscpd": "^4.0.8",
     "jsdoc-to-markdown": "^9.1.3",
     "knip": "^6.0.4",
-    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",
     "vitest": "^4.1.1"

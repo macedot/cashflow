@@ -74,7 +74,6 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 - **Coverage thresholds**: statements 80%, branches 80%, functions 80%, lines 80%
 - **Commit style**: Conventional Commits.
 - **Branches**: `feature/*`, `fix/*`, `readiness/*`
-- **Pre-commit hook** (Husky): `lint-staged` runs ESLint fix + Prettier on staged `.js`; Prettier on `.json/.md/.css/.html`
 
 ## Testing
 
@@ -92,5 +91,3 @@ No `.ts` files. Type checking via `tsc --noEmit` with `checkJs: true` and full s
 ## Documentation
 
 - [API.md](API.md) — auto-generated from JSDoc (`npm run docs`)
-- [docs/architecture.md](docs/architecture.md) — system diagrams, data flow
-- [docs/runbooks.md](docs/runbooks.md) — dev setup, deployment, troubleshooting, localStorage keys

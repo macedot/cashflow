@@ -29,14 +29,6 @@
 !.github/CODEOWNERS
 !.github/pull_request_template.md
 
-# ── Pre-commit hooks ──
-!.husky/
-!.husky/pre-commit
-
-# ── Documentation ──
-!docs/
-!docs/*.md
-
 # ── Source code ──
 !src/
 !src/*.js
@@ -53,15 +45,6 @@
 !tests/
 !tests/integration/
 !tests/integration/*.js
-
-# ── Local skills and agent config ──
-!.claude/
-!.claude/skills/
-!.claude/skills/**
-
-# ── Dev container ──
-!.devcontainer/
-!.devcontainer/**
 
 # ── Re-deny generated / OS artifacts within allowed dirs ──
 node_modules/

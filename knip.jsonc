@@ -14,7 +14,6 @@
   ],
   "ignoreDependencies": [
     "vitest",
-    "lint-staged",
     "@vitest/coverage-v8",
     "@eslint/js",
     "eslint-plugin-boundaries"
