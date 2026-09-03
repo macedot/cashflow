@@ -1,6 +1,6 @@
 {
   "name": "cf-sim",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Visualize your income, expenses, and balance over time",
   "type": "module",
   "scripts": {
@@ -17,7 +17,7 @@
     "jscpd": "jscpd --config .jscpd.json",
     "prepare": "husky",
     "release": "release-please release",
-    "docs": "jsdoc2md src/cashflow.js src/dateInput.js > API.md"
+    "docs": "jsdoc2md src/cashflow.js src/dateInput.js src/eventSort.js > API.md"
   },
   "lint-staged": {
     "*.js": [

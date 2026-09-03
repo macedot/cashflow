@@ -57,12 +57,13 @@ sequenceDiagram
 
 ## Module Responsibilities
 
-| Module            | Location               | Purpose                                 |
-| ----------------- | ---------------------- | --------------------------------------- |
-| Simulation Engine | `src/cashflow.js`      | Pure functions for cashflow calculation |
-| Unit Tests        | `src/cashflow.test.js` | Vitest tests for simulation logic       |
-| Styling           | `src/style.css`        | Custom CSS + Tailwind overrides         |
-| Application       | `index.html`           | Vue 3 SPA with CDN dependencies         |
+| Module            | Location               | Purpose                                   |
+| ----------------- | ---------------------- | ----------------------------------------- |
+| Simulation Engine | `src/cashflow.js`      | Pure functions for cashflow calculation   |
+| Event Sorting     | `src/eventSort.js`     | Pure comparators for events table sorting |
+| Unit Tests        | `src/cashflow.test.js` | Vitest tests for simulation logic         |
+| Styling           | `src/style.css`        | Custom CSS + Tailwind overrides           |
+| Application       | `index.html`           | Vue 3 SPA with CDN dependencies           |
 
 ## External Dependencies
 
